@@ -4,7 +4,6 @@ import { NextIntlClientProvider, useMessages } from "next-intl";
 import { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Navbar } from "@/components/layout/navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,11 +32,10 @@ export default function RootLayout({
   return (
     <html lang={params.locale} suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-gradient-to-br from-white via-[#e0e7ff] to-[#e0f7fa] dark:from-[#0f0c29] dark:via-[#302b63] dark:to-[#24243e] text-gray-900 dark:text-gray-100 transition-colors`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-white text-gray-900 dark:bg-neutral-950 dark:text-gray-100 transition-colors`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextIntlClientProvider locale={params.locale} messages={messages}>
-            <Navbar />
             {children}
           </NextIntlClientProvider>
         </ThemeProvider>

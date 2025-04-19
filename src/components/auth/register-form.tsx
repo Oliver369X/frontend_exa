@@ -128,7 +128,7 @@ export function RegisterForm() {
         disabled={isLoading}
         className="mt-2 px-6 py-2 rounded-lg bg-gradient-to-r from-secondary to-primary text-black dark:text-white font-bold shadow-lg hover:scale-105 transition-transform border-2 border-secondary/60 backdrop-blur-md disabled:opacity-60 text-base sm:text-lg"
       >
-        {isLoading ? "..." : t("submit")}
+        {isLoading ? t("loading") : t("submit")}
       </button>
     </form>
   );

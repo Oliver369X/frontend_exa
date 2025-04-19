@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { useRouter } from "next/navigation";
 import { ProjectForm } from "./project-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,7 @@ type Project = {
 export function ProjectList() {
   const t = useTranslations("projects");
   const locale = useLocale();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
@@ -106,6 +108,12 @@ export function ProjectList() {
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("title")}</h2>
         <Button onClick={() => { setShowForm(true); setEditProject(null); }}>{t("add")}</Button>
       </div>
+      <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
+        <span className="inline-flex items-center gap-1">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" className="text-primary"><circle cx="10" cy="10" r="9" stroke="currentColor" strokeWidth="2" /><path d="M6 10l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          {t("rowClickable")}
+        </span>
+      </div>
       {hasError && <div className="text-red-500 text-center mb-2">{hasError}</div>}
       {isLoading ? (
         <div className="text-center py-10 text-gray-500 dark:text-gray-400">{t("loading")}</div>
@@ -130,12 +138,12 @@ export function ProjectList() {
               </TableRow>
             ) : (
               projects.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell className="font-medium">{p.name}</TableCell>
+                <TableRow key={p.id} className="cursor-pointer hover:bg-primary/10 transition group" onClick={() => router.push(`/${locale}/projects/${p.id}`)} title={t("rowClickableTooltip")}> 
+                  <TableCell className="font-medium group-hover:underline">{p.name}</TableCell>
                   <TableCell>{p.description}</TableCell>
                   <TableCell>{p.status}</TableCell>
                   <TableCell>{new Date(p.createdAt).toLocaleDateString(locale)}</TableCell>
-                  <TableCell className="flex gap-2 justify-end">
+                  <TableCell className="flex gap-2 justify-end" onClick={e => e.stopPropagation()}>
                     <Button size="icon" variant="outline" aria-label={t("edit")}
                       onClick={() => { setShowForm(true); setEditProject(p); }}>
                       ✏️

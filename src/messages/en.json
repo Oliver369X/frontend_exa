@@ -21,7 +21,9 @@
     "projects": "Projects",
     "recentActivity": "Recent activity",
     "noRecentProjects": "No recent projects",
-    "viewAllProjects": "View all projects"
+    "viewAllProjects": "View all projects",
+    "profile": "Profile",
+    "loading": "Loading..."
   },
   "auth": {
     "login_title": "Sign in",
@@ -45,6 +47,45 @@
       "invalid": "Invalid data",
       "error": "Error saving project"
     },
-    "error": "Error loading projects"
+    "error": "Error loading projects",
+    "versions": {
+      "title": "Version history",
+      "empty": "No versions saved",
+      "restore": "Restore",
+      "restoring": "Restoring...",
+      "restoreError": "Error restoring version",
+      "error": "Error loading version history",
+      "noComment": "No comment"
+    },
+    "collaborators": {
+      "title": "Collaborators",
+      "emailPlaceholder": "User email",
+      "add": "Add collaborator",
+      "remove": "Remove",
+      "read": "Read only",
+      "write": "Read and write",
+      "empty": "No collaborators",
+      "error": "Error loading collaborators",
+      "addError": "Error adding collaborator",
+      "removeError": "Error removing collaborator"
+    },
+    "linkAccessTitle": "Link access",
+    "linkAccessNone": "Disabled",
+    "linkAccessRead": "Read only",
+    "linkAccessWrite": "Read and write",
+    "linkAccessUpdated": "Access level updated",
+    "linkAccessUpdateError": "Could not update access",
+    "linkTokenRegenerated": "Token regenerated",
+    "linkTokenRegenerateError": "Could not regenerate token",
+    "linkCopied": "Link copied",
+    "versionRestored": "Version restored",
+    "rowClickable": "Click the row to view details and collaborate.",
+    "rowClickableTooltip": "Click to open the project and see history, collaborators, and visual editor.",
+    "visualEditorComingSoon": "Visual editor coming soon…",
+    "loading": "Loading...",
+    "copyLinkTooltip": "Copy link"
+  },
+  "preview": {
+    "placeholder": "Project preview (GrapesJS here)"
   }
 }

@@ -27,13 +27,19 @@
     "table": {
       "name": "Nombre",
       "status": "Estado",
-      "createdAt": "Creado el"
+      "createdAt": "Creado el",
+      "rowClickable": "Haz clic en la fila para ver detalles y colaborar.",
+      "rowClickableTooltip": "Haz clic para abrir el proyecto y ver el historial, colaboradores y editor visual."
     },
     "recentProjectsCaption": "Últimos proyectos creados",
     "sidebar": {
       "title": "Panel derecho",
       "empty": "Aquí aparecerán widgets, métricas y accesos rápidos próximamente."
-    }
+    },
+    "copyLink": "Copiar enlace",
+    "copyLinkTooltip": "Copiar enlace",
+    "profile": "Perfil",
+    "loading": "Cargando..."
   },
   "auth": {
     "login_title": "Iniciar sesión",
@@ -46,7 +52,8 @@
     "password_placeholder": "Introduce tu contraseña",
     "show-password-visibility": "Mostrar/ocultar contraseña",
     "show_password": "Mostrar contraseña",
-    "name_placeholder": "Introduce tu nombre"
+    "name_placeholder": "Introduce tu nombre",
+    "loading": "Cargando..."
   },
   "projects": {
     "title": "Proyectos",
@@ -75,13 +82,42 @@
       "status": "Estado",
       "createdAt": "Creado el",
       "actions": "Acciones",
-      "empty": "No hay proyectos para mostrar."
+      "empty": "No hay proyectos para mostrar.",
+      "rowClickable": "Haz clic para ver el proyecto",
+      "rowClickableTooltip": "Haz clic en la fila para ver los detalles del proyecto",
+      "visualEditorComingSoon": "Editor visual próximamente…"
     },
     "deleteTitle": "Eliminar proyecto",
     "deleteConfirm": "¿Seguro que deseas eliminar el proyecto '{name}'?",
     "deleteError": "Error al eliminar el proyecto",
     "archived": "Archivado",
     "active": "Activo",
+    "versionRestored": "Versión restaurada",
+    "rowClickable": "Haz clic para ver detalles y colaborar.",
+    "rowClickableTooltip": "Haz clic para abrir el proyecto y ver historial, colaboradores y editor visual.",
+    "visualEditorComingSoon": "Editor visual próximamente…",
+    "loading": "Cargando...",
+    "copyLinkTooltip": "Copiar enlace",
+    "preview": {
+      "placeholder": "Vista previa del proyecto (GrapesJS aquí)"
+    },
+    "remove": "Eliminar",
+    "removeCollaborator": "Eliminar colaborador",
+    "collaborators": {
+      "title": "Colaboradores",
+      "emailPlaceholder": "Correo del usuario",
+      "add": "Agregar colaborador",
+      "remove": "Eliminar",
+      "removeCollaborator": "Eliminar colaborador",
+      "read": "Solo lectura",
+      "write": "Lectura y escritura",
+      "empty": "No hay colaboradores",
+      "error": "Error al cargar colaboradores",
+      "addError": "Error al agregar colaborador",
+      "removeError": "Error al eliminar colaborador",
+      "added": "Colaborador agregado",
+      "removed": "Colaborador eliminado"
+    },
     "versions": {
       "title": "Historial de versiones",
       "empty": "No hay versiones guardadas",
@@ -90,6 +126,20 @@
       "restoreError": "Error al restaurar la versión",
       "error": "Error al cargar el historial de versiones",
       "noComment": "Sin comentario"
-    }
+    },
+    "shareLinkButton": "Compartir",
+    "shareLinkDescription": "Elige el nivel de acceso y comparte el enlace con quien quieras.",
+    "regenerateTokenTooltip": "Regenerar token",
+    "linkAccessTitle": "Acceso por enlace",
+    "linkAccessNone": "Deshabilitado",
+    "linkAccessRead": "Solo lectura",
+    "linkAccessWrite": "Lectura y escritura",
+    "linkAccessUpdated": "Nivel de acceso actualizado",
+    "linkAccessUpdateError": "No se pudo actualizar el acceso",
+    "linkTokenRegenerated": "Token regenerado",
+    "linkTokenRegenerateError": "No se pudo regenerar el token",
+    "linkCopied": "Enlace copiado",
+    "linkWriteAccessMessage": "Cualquier persona con el enlace puede ver y editar este proyecto.",
+    "linkReadAccessMessage": "Cualquier persona con el enlace puede ver este proyecto, pero no editarlo."
   }
 }

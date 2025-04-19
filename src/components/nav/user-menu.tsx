@@ -24,7 +24,7 @@ export function UserMenu() {
       disabled={isLoading}
       className="px-4 py-2 rounded-lg font-semibold text-[#ff00cc] hover:bg-[#232946]/60 transition-colors border border-[#ff00cc]/30"
     >
-      {isLoading ? "..." : t("logout")}
+      {isLoading ? t("loading") : t("logout")}
     </button>
   );
 }
