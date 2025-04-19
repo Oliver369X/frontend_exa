@@ -1,0 +1,95 @@
+{
+  "landing": {
+    "title": "Plataforma de Agentes Inteligentes",
+    "subtitle": "Gestiona tus proyectos con IA, agentes autónomos y una experiencia moderna.",
+    "description": "El futuro de la colaboración, potenciado por IA y agentes autónomos. Seguridad, velocidad y estilo cyberpunk.",
+    "get_started": "¡Comenzar ahora!",
+    "cta_start": "¡Comenzar ahora!",
+    "cta_features": "Ver características",
+    "feature_agents": "Agentes Autónomos",
+    "feature_agents_desc": "Automatiza tareas y flujos con agentes inteligentes y personalizables.",
+    "feature_security": "Seguridad y Control",
+    "feature_security_desc": "Tus datos siempre protegidos con autenticación avanzada y permisos granulares.",
+    "feature_ux": "UX Futurista",
+    "feature_ux_desc": "Interfaz moderna, responsiva y lista para equipos visionarios.",
+    "footer": "Plataforma de agentes inteligentes — 2025 Todos los derechos reservados"
+  },
+  "nav": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "dashboard": "Panel",
+    "logout": "Cerrar sesión",
+    "language": "Idioma",
+    "projects": "Proyectos",
+    "recentActivity": "Actividad reciente",
+    "noRecentProjects": "No hay proyectos recientes",
+    "viewAllProjects": "Ver todos los proyectos",
+    "table": {
+      "name": "Nombre",
+      "status": "Estado",
+      "createdAt": "Creado el"
+    },
+    "recentProjectsCaption": "Últimos proyectos creados",
+    "sidebar": {
+      "title": "Panel derecho",
+      "empty": "Aquí aparecerán widgets, métricas y accesos rápidos próximamente."
+    }
+  },
+  "auth": {
+    "login_title": "Iniciar sesión",
+    "register_title": "Crear cuenta",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "name": "Nombre",
+    "submit": "Enviar",
+    "error": "Error: datos inválidos o usuario no encontrado.",
+    "password_placeholder": "Introduce tu contraseña",
+    "show-password-visibility": "Mostrar/ocultar contraseña",
+    "show_password": "Mostrar contraseña",
+    "name_placeholder": "Introduce tu nombre"
+  },
+  "projects": {
+    "title": "Proyectos",
+    "create": "Crear proyecto",
+    "add": "Agregar proyecto",
+    "update": "Actualizar proyecto",
+    "edit": "Editar proyecto",
+    "delete": "Eliminar proyecto",
+    "deleting": "Eliminando...",
+    "cancel": "Cancelar",
+    "loading": "Cargando proyectos...",
+    "form": {
+      "saving": "Guardando...",
+      "update": "Actualizar",
+      "create": "Crear",
+      "invalid": "Datos inválidos",
+      "error": "Error al guardar el proyecto",
+      "name": "Nombre del proyecto",
+      "description": "Descripción del proyecto"
+    },
+    "error": "Error al cargar los proyectos",
+    "table": {
+      "caption": "Lista de proyectos",
+      "name": "Nombre",
+      "description": "Descripción",
+      "status": "Estado",
+      "createdAt": "Creado el",
+      "actions": "Acciones",
+      "empty": "No hay proyectos para mostrar."
+    },
+    "deleteTitle": "Eliminar proyecto",
+    "deleteConfirm": "¿Seguro que deseas eliminar el proyecto '{name}'?",
+    "deleteError": "Error al eliminar el proyecto",
+    "archived": "Archivado",
+    "active": "Activo",
+    "versions": {
+      "title": "Historial de versiones",
+      "empty": "No hay versiones guardadas",
+      "restore": "Restaurar",
+      "restoring": "Restaurando...",
+      "restoreError": "Error al restaurar la versión",
+      "error": "Error al cargar el historial de versiones",
+      "noComment": "Sin comentario"
+    }
+  }
+}

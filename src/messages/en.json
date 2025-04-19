@@ -1,0 +1,50 @@
+{
+  "landing": {
+    "title": "Intelligent Agents Platform",
+    "description": "The future of collaboration, powered by AI and autonomous agents. Security, speed and cyberpunk style.",
+    "cta_start": "Get started!",
+    "cta_features": "See features",
+    "feature_agents": "Autonomous Agents",
+    "feature_agents_desc": "Automate tasks and workflows with smart, customizable agents.",
+    "feature_security": "Security & Control",
+    "feature_security_desc": "Your data always protected with advanced authentication and granular permissions.",
+    "feature_ux": "Futuristic UX",
+    "feature_ux_desc": "Modern, responsive interface ready for visionary teams.",
+    "footer": "Intelligent Agents Platform — 2025 All rights reserved"
+  },
+  "nav": {
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "logout": "Logout",
+    "language": "Language",
+    "projects": "Projects",
+    "recentActivity": "Recent activity",
+    "noRecentProjects": "No recent projects",
+    "viewAllProjects": "View all projects"
+  },
+  "auth": {
+    "login_title": "Sign in",
+    "register_title": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "submit": "Submit",
+    "error": "Error: invalid data or user not found."
+  },
+  "projects": {
+    "title": "Projects",
+    "create": "Create project",
+    "update": "Update project",
+    "delete": "Delete project",
+    "deleting": "Deleting...",
+    "form": {
+      "saving": "Saving...",
+      "update": "Update",
+      "create": "Create",
+      "invalid": "Invalid data",
+      "error": "Error saving project"
+    },
+    "error": "Error loading projects"
+  }
+}
