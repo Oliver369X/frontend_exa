@@ -181,7 +181,7 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
       if (typeof initialContent === 'object' && initialContent !== null && initialContent.hasOwnProperty('components')) {
         // Load from GrapesJSData object
         if (Array.isArray(initialContent.components) && initialContent.components.length > 0) {
-          editor.loadComponents(initialContent.components);
+          editor.addComponents(initialContent.components);
         } else if (!readOnly) {
            // Load default if object is empty and in edit mode
           editor.setComponents('<h1>Start Editing</h1>');
@@ -267,17 +267,17 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
   // Save content to backend when requested
   // Function to save content to backend
   const saveContent = async (): Promise<boolean> => {
-    if (!editorRefInternal.current || !session?.user?.accessToken) return false;
+    if (!editorRefInternal.current || !session?.backendToken) return false;
 
     try {
       const html = editorRefInternal.current.getHtml();
-      const apiUrl = getApiUrl();
+      const apiUrl = getApiUrl(`/projects/${projectId}/content`);
       
-      const response = await fetch(`${apiUrl}/projects/${projectId}/content`, {
+      const response = await fetch(apiUrl, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session.user.accessToken}`,
+          Authorization: `Bearer ${session.backendToken}`,
         },
         body: JSON.stringify({ content: html }),
       });

@@ -139,35 +139,32 @@ export function ClientPanel({ projectId, isOwner, linkAccessFromLink }: ClientPa
 
   // Debounced save function using useCallback
   const debouncedSave = useCallback(async (components: GrapesJSComponent[] | undefined, styles: string) => {
+    // 1. Guardado Persistente
     if (!session?.backendToken || !projectData) return;
-
     setIsSaving(true);
-    // Asegurarse que components no sea undefined al guardar
     const designDataToSave: ProjectDesignData = { components: components ?? [], styles };
     const savingToastId = toast.loading(t("savingChanges", { defaultValue: "Saving changes..." }));
-
+    
+    // --- LOG DE GUARDADO (Cliente) --- 
+    console.log(`[ClientPanel Save] Attempting to PATCH /projects/${projectData.id}`);
+    // --------------------------------
+    
     try {
       const baseApiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || '';
       const response = await fetch(`${baseApiUrl}/projects/${projectData.id}`, {
         method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${session.backendToken}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${session.backendToken}`, "Content-Type": "application/json" },
         body: JSON.stringify({ designData: designDataToSave }),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Save API Error:", response.status, errorData);
-        throw new Error(`Failed to save project: ${response.statusText}`);
-      }
+      // Añadir log del resultado
+      console.log(`[ClientPanel Save] PATCH response status: ${response.status}`);
+      if (!response.ok) throw new Error(`Failed to save project: ${response.statusText}`);
       toast.success(t("changesSaved", { defaultValue: "Changes saved" }), { id: savingToastId });
-
-    } catch (error: unknown) {
-      console.error("Error saving project:", error);
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      toast.error(t("saveError", { defaultValue: `Error saving changes: ${errorMessage}` }), { id: savingToastId });
+    } catch (error: unknown) { 
+         // Añadir log del error
+         console.error("[ClientPanel Save] PATCH error:", error);
+         const errorMessage = error instanceof Error ? error.message : String(error);
+         toast.error(t("saveError", { defaultValue: `Error saving changes: ${errorMessage}` }), { id: savingToastId });
     } finally {
       setIsSaving(false);
     }

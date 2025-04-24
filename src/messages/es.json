@@ -168,6 +168,9 @@
     "no": "No",
     "savingChanges": "Guardando cambios...",
     "changesSaved": "Cambios guardados",
-    "readOnlyMode": "Modo sólo lectura"
+    "readOnlyMode": "Modo sólo lectura",
+    "auth": {
+      "missingToken": "Falta el token de autenticación."
+    }
   }
 }
