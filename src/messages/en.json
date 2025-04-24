@@ -67,7 +67,9 @@
       "empty": "No collaborators",
       "error": "Error loading collaborators",
       "addError": "Error adding collaborator",
-      "removeError": "Error removing collaborator"
+      "removeError": "Error removing collaborator",
+      "manageButton": "Manage Collaborators",
+      "removeCollaborator": "Remove collaborator"
     },
     "linkAccessTitle": "Link access",
     "linkAccessNone": "Disabled",

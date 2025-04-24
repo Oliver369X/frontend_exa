@@ -344,17 +344,6 @@ export function ClientPanel({ projectId, isOwner, linkAccessFromLink }: ClientPa
           </div>
         )}
       </div>
-
-      {/* Project information */}
-      <div className="p-4 border rounded">
-        <h2 className="text-lg font-medium mb-2">{t("projectInfo", { defaultValue: "Project Information" })}</h2>
-        <div className="space-y-2">
-          <p><strong>{t("projectId", { defaultValue: "Project ID" })}:</strong> {projectData.id}</p>
-          <p><strong>{t("projectName", { defaultValue: "Project Name" })}:</strong> {projectData.name}</p>
-          <p><strong>{t("accessLevel", { defaultValue: "Access Level" })}:</strong> {effectiveAccess}</p>
-          <p><strong>{t("owner", { defaultValue: "Owner" })}:</strong> {isOwner ? t("yes", { defaultValue: "Yes" }) : t("no", { defaultValue: "No" })}</p>
-        </div>
-      </div>
     </div>
   );
 }

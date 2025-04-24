@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { getClientToken } from "@/lib/auth-client";
+import { toast } from "react-hot-toast";
 
 /**
  * Version type for project versions (design snapshots)
@@ -16,10 +17,9 @@ export type ProjectVersion = {
 
 interface ProjectVersionsPanelProps {
   projectId: string;
-  onRestore: (snapshot: any) => void;
 }
 
-export function ProjectVersionsPanel({ projectId, onRestore }: ProjectVersionsPanelProps) {
+export function ProjectVersionsPanel({ projectId }: ProjectVersionsPanelProps) {
   const t = useTranslations("projects");
   const [versions, setVersions] = useState<ProjectVersion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -63,7 +63,8 @@ export function ProjectVersionsPanel({ projectId, onRestore }: ProjectVersionsPa
       });
       if (!res.ok) throw new Error("Error");
       const { snapshot } = await res.json();
-      onRestore(snapshot);
+      console.log("Snapshot recibido para restaurar (necesita implementación cliente):", snapshot);
+      toast.info("Restauración iniciada (falta aplicar al editor)");
     } catch {
       setHasError(t("versions.restoreError"));
     } finally {

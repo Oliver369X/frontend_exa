@@ -117,7 +117,9 @@
       "addError": "Error al agregar colaborador",
       "removeError": "Error al eliminar colaborador",
       "added": "Colaborador agregado",
-      "removed": "Colaborador eliminado"
+      "removed": "Colaborador eliminado",
+      "manageButton": "Gestionar Colaboradores",
+      "removeCollaborator": "Eliminar colaborador"
     },
     "versions": {
       "title": "Historial de versiones",
