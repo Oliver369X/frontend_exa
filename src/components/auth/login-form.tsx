@@ -3,6 +3,7 @@ import { useState, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import { z } from "zod";
+import { signIn } from "next-auth/react";
 
 const LoginSchema = z.object({
   email: z.string().email(),
@@ -13,6 +14,8 @@ export function LoginForm() {
   const t = useTranslations("auth");
   const router = useRouter();
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || `/${locale}/dashboard`;
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -20,42 +23,46 @@ export function LoginForm() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setHasError("");
+    setIsLoading(true);
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const values = {
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    };
-    const parse = LoginSchema.safeParse(values);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    const parse = LoginSchema.safeParse({ email, password });
     if (!parse.success) {
-      setHasError(t("error"));
+      setHasError(t("error", { defaultValue: "Invalid email or password format." }));
+      setIsLoading(false);
       return;
     }
-    setIsLoading(true);
+
     try {
-      const res = await fetch("http://localhost:4000/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+      console.log("[LoginForm] Attempting signIn...");
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: email,
+        password: password,
+        callbackUrl: callbackUrl
       });
-      if (!res.ok) {
-        setHasError(t("error"));
+
+      console.log("[LoginForm] signIn result:", result);
+
+      if (result?.error) {
+        console.error("[LoginForm] signIn error:", result.error);
+        setHasError(t("error", { defaultValue: "Invalid credentials or server error." }));
         setIsLoading(false);
-        return;
+      } else if (result?.ok) {
+        console.log("[LoginForm] signIn successful, redirecting to:", callbackUrl);
+        router.push(callbackUrl);
+      } else {
+        console.error("[LoginForm] Unexpected signIn result:", result);
+        setHasError(t("error", { defaultValue: "An unexpected error occurred." }));
+        setIsLoading(false);
       }
-      const data = await res.json();
-      // Guardar JWT en localStorage
-      localStorage.setItem("token", data.token);
-      // Solicita a /api/auth/login para guardar el token en cookie httpOnly
-      await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      router.push(`/${locale}/dashboard`);
-    } catch (err) {
-      setHasError(t("error"));
-    } finally {
+
+    } catch (error) {
+      console.error("[LoginForm] Exception during signIn:", error);
+      setHasError(t("error", { defaultValue: "Login failed due to a network or server issue." }));
       setIsLoading(false);
     }
   }

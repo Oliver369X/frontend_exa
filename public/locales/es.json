@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "projects": "Proyectos",
+    "recentActivity": "Actividad Reciente",
+    "recentProjectsCaption": "Una lista de tus proyectos recientes.",
+    "login": "Iniciar Sesión",
+    "signup": "Registrarse",
+    "logout": "Cerrar Sesión"
+  },
+  "projects": {
+    "create": "Crear Proyecto",
+    "new": "Nuevo Proyecto",
+    "nameLabel": "Nombre del Proyecto",
+    "descriptionLabel": "Descripción",
+    "createButton": "Crear",
+    "cancelButton": "Cancelar",
+    "table": {
+      "name": "Nombre",
+      "status": "Estado",
+      "createdAt": "Creado el",
+      "actions": "Acciones",
+      "empty": "No se encontraron proyectos. ¡Crea uno nuevo!"
+    },
+    "rowClickableTooltip": "Haz clic para abrir el proyecto",
+    "active": "Activo",
+    "archived": "Archivado",
+    "loadError": "Error al cargar los datos del proyecto.",
+    "projectInfo": "Información del Proyecto",
+    "projectId": "ID del Proyecto",
+    "projectName": "Nombre del Proyecto",
+    "accessLevel": "Nivel de Acceso",
+    "owner": "Propietario",
+    "yes": "Sí",
+    "no": "No",
+    "savingChanges": "Guardando cambios...",
+    "changesSaved": "Cambios guardados",
+    "saveError": "Error al guardar cambios",
+    "loadingProject": "Cargando proyecto...",
+    "notAuthenticated": "Autenticación requerida.",
+    "readOnlyMode": "Modo sólo lectura"
+  },
+  "auth": {
+    "loginTitle": "Iniciar Sesión",
+    "emailLabel": "Correo Electrónico",
+    "passwordLabel": "Contraseña",
+    "loginButton": "Iniciar Sesión",
+    "signupLink": "¿No tienes cuenta? Regístrate",
+    "signupTitle": "Registrarse",
+    "signupButton": "Registrarse",
+    "loginLink": "¿Ya tienes cuenta? Inicia Sesión",
+    "loginError": "Error de inicio de sesión. Verifica tus credenciales.",
+    "loginSuccess": "¡Inicio de sesión exitoso!",
+    "signupError": "Error de registro. Inténtalo de nuevo.",
+    "signupSuccess": "¡Registro exitoso! Ahora puedes iniciar sesión."
+  }
+} 

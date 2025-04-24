@@ -1,0 +1,113 @@
+/* GrapesJS Editor Custom Styles */
+
+/* Editor container */
+.gjs-editor-cont {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Canvas */
+.gjs-cv-canvas {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+/* Panels */
+.gjs-pn-panel {
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Buttons */
+.gjs-pn-btn {
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.gjs-pn-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Blocks */
+.gjs-block {
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+}
+
+.gjs-block:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Selected component */
+.gjs-selected {
+  outline: 2px solid #2563eb !important;
+}
+
+/* Component hover */
+.gjs-hovered {
+  outline: 1px solid #60a5fa !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .gjs-block {
+    width: 45%;
+  }
+}
+
+/* Dark mode support */
+.dark .gjs-cv-canvas {
+  background-color: #1f2937;
+  border-color: #374151;
+}
+
+.dark .gjs-pn-panel {
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.dark .gjs-block {
+  background-color: #1f2937;
+  color: #f9fafb;
+}
+
+/* Improve accessibility */
+.gjs-pn-btn:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Loading state */
+.gjs-editor-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.dark .gjs-editor-loading {
+  background-color: rgba(17, 24, 39, 0.7);
+}
+
+/* Improve toolbar visibility */
+.gjs-toolbar {
+  background-color: #2563eb;
+  border-radius: 0.25rem;
+}
+
+.gjs-toolbar-item {
+  color: white;
+}
+
+.gjs-toolbar-item:hover {
+  background-color: #1d4ed8;
+}

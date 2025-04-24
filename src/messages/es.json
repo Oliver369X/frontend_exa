@@ -53,18 +53,28 @@
     "show-password-visibility": "Mostrar/ocultar contraseña",
     "show_password": "Mostrar contraseña",
     "name_placeholder": "Introduce tu nombre",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "missingToken": "No autorizado. Inicia sesión nuevamente."
   },
   "projects": {
     "title": "Proyectos",
     "create": "Crear proyecto",
     "add": "Agregar proyecto",
     "update": "Actualizar proyecto",
-    "edit": "Editar proyecto",
+    "editProject": "Editar proyecto",
     "delete": "Eliminar proyecto",
     "deleting": "Eliminando...",
     "cancel": "Cancelar",
     "loading": "Cargando proyectos...",
+    "shared": {
+      "edit_access": "Acceso de edición",
+      "view_access": "Acceso de visualización",
+      "shared_project": "Proyecto compartido",
+      "about_project": "Acerca del proyecto",
+      "project_editor": "Editor de proyecto",
+      "collaborative": "Colaborativo",
+      "view_only": "Solo visualización"
+    },
     "form": {
       "saving": "Guardando...",
       "update": "Actualizar",
@@ -82,10 +92,7 @@
       "status": "Estado",
       "createdAt": "Creado el",
       "actions": "Acciones",
-      "empty": "No hay proyectos para mostrar.",
-      "rowClickable": "Haz clic para ver el proyecto",
-      "rowClickableTooltip": "Haz clic en la fila para ver los detalles del proyecto",
-      "visualEditorComingSoon": "Editor visual próximamente…"
+      "empty": "No hay proyectos para mostrar."
     },
     "deleteTitle": "Eliminar proyecto",
     "deleteConfirm": "¿Seguro que deseas eliminar el proyecto '{name}'?",
@@ -93,16 +100,10 @@
     "archived": "Archivado",
     "active": "Activo",
     "versionRestored": "Versión restaurada",
-    "rowClickable": "Haz clic para ver detalles y colaborar.",
-    "rowClickableTooltip": "Haz clic para abrir el proyecto y ver historial, colaboradores y editor visual.",
-    "visualEditorComingSoon": "Editor visual próximamente…",
-    "loading": "Cargando...",
-    "copyLinkTooltip": "Copiar enlace",
     "preview": {
       "placeholder": "Vista previa del proyecto (GrapesJS aquí)"
     },
     "remove": "Eliminar",
-    "removeCollaborator": "Eliminar colaborador",
     "collaborators": {
       "title": "Colaboradores",
       "emailPlaceholder": "Correo del usuario",
@@ -140,6 +141,33 @@
     "linkTokenRegenerateError": "No se pudo regenerar el token",
     "linkCopied": "Enlace copiado",
     "linkWriteAccessMessage": "Cualquier persona con el enlace puede ver y editar este proyecto.",
-    "linkReadAccessMessage": "Cualquier persona con el enlace puede ver este proyecto, pero no editarlo."
+    "linkReadAccessMessage": "Cualquier persona con el enlace puede ver este proyecto, pero no editarlo.",
+    "editProject": "Editar proyecto",
+    "closeEditor": "Cerrar editor",
+    "readOnlyPreview": "Vista previa de solo lectura",
+    "saved": "Guardado",
+    "saving": "Guardando...",
+    "saveError": "Error al guardar",
+    "editAction": "Editar",
+    "editingNow": "Editando ahora:",
+    "liveUpdated": "Actualizado en tiempo real",
+    "rowClickable": "Haz clic para ver detalles y colaborar.",
+    "rowClickableTooltip": "Haz clic para abrir el proyecto y ver el historial, colaboradores y editor visual.",
+    "visualEditorComingSoon": "Editor visual próximamente…",
+    "copyLinkTooltip": "Copiar enlace",
+    "edit": "Editar",
+    "loadingProject": "Cargando proyecto...",
+    "notAuthenticated": "Autenticación requerida.",
+    "loadError": "Error al cargar los datos del proyecto.",
+    "projectInfo": "Información del Proyecto",
+    "projectId": "ID del Proyecto",
+    "projectName": "Nombre del Proyecto",
+    "accessLevel": "Nivel de Acceso",
+    "owner": "Propietario",
+    "yes": "Sí",
+    "no": "No",
+    "savingChanges": "Guardando cambios...",
+    "changesSaved": "Cambios guardados",
+    "readOnlyMode": "Modo sólo lectura"
   }
 }

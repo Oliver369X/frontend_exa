@@ -83,7 +83,16 @@
     "rowClickableTooltip": "Click to open the project and see history, collaborators, and visual editor.",
     "visualEditorComingSoon": "Visual editor coming soon…",
     "loading": "Loading...",
-    "copyLinkTooltip": "Copy link"
+    "copyLinkTooltip": "Copy link",
+    "editProject": "Edit project",
+    "closeEditor": "Close editor",
+    "readOnlyPreview": "Read-only preview",
+    "saved": "Saved",
+    "saving": "Saving...",
+    "saveError": "Error saving",
+    "edit": "Edit",
+    "editingNow": "Editing now:",
+    "liveUpdated": "Live updated"
   },
   "preview": {
     "placeholder": "Project preview (GrapesJS here)"

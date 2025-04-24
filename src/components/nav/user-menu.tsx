@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 
 export function UserMenu() {
   const t = useTranslations("nav");
@@ -11,11 +12,10 @@ export function UserMenu() {
 
   const handleLogout = async () => {
     setIsLoading(true);
-    await fetch("/api/auth/logout", { method: "POST" });
-    // Limpia localStorage (si usabas token ahí)
-    localStorage.removeItem("token");
+    await signOut({ redirect: false });
     setIsLoading(false);
     router.push(`/${locale}/login`);
+    router.refresh();
   };
 
   return (

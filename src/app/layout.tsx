@@ -4,6 +4,8 @@ import { NextIntlClientProvider, useMessages } from "next-intl";
 import { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import AppSessionProvider from "@/components/session-provider";
+import { SocketProvider } from "@/components/socket";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +38,11 @@ export default function RootLayout({
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <NextIntlClientProvider locale={params.locale} messages={messages}>
-            {children}
+            <AppSessionProvider>
+              <SocketProvider>
+                {children}
+              </SocketProvider>
+            </AppSessionProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

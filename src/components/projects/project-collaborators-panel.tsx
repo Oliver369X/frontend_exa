@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { useSession } from 'next-auth/react';
 
 /**
  * Panel para gestionar los colaboradores de un proyecto.
@@ -10,6 +11,7 @@ import { toast } from "sonner";
  */
 export function ProjectCollaboratorsPanel({ projectId, isOwner }: { projectId: string; isOwner: boolean }) {
   const t = useTranslations("projects");
+  const { data: session } = useSession();
   const [collaborators, setCollaborators] = useState<{ userId: string; email: string; permission: "read" | "write" }[]>([]);
   const [email, setEmail] = useState("");
   const [permission, setPermission] = useState<"read" | "write">("read");
@@ -26,8 +28,16 @@ export function ProjectCollaboratorsPanel({ projectId, isOwner }: { projectId: s
     setIsLoading(true);
     setHasError("");
     try {
-      // Ajusta la URL y headers según tu backend
-      const res = await fetch(`http://localhost:4000/projects/${projectId}/permissions`);
+      const token = session?.backendToken;
+      if (!token) {
+        setHasError(t("auth.missingToken", { defaultValue: "No autorizado. Inicia sesión nuevamente." }));
+        return;
+      }
+      const res = await fetch(`http://localhost:4000/projects/${projectId}/permissions`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error("Error");
       const data = await res.json();
       setCollaborators(Array.isArray(data) ? data : []);
@@ -42,9 +52,19 @@ export function ProjectCollaboratorsPanel({ projectId, isOwner }: { projectId: s
     setIsSubmitting(true);
     setHasError("");
     try {
+      const token = session?.backendToken;
+      if (!token) {
+        setHasError(t("auth.missingToken", { defaultValue: "No autorizado. Inicia sesión nuevamente." }));
+        toast.error(t("auth.missingToken", { defaultValue: "No autorizado. Inicia sesión nuevamente." }));
+        setIsSubmitting(false);
+        return;
+      }
       const res = await fetch(`http://localhost:4000/projects/${projectId}/permissions`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ email, permission }),
       });
       if (!res.ok) throw new Error("Error");
@@ -63,7 +83,7 @@ export function ProjectCollaboratorsPanel({ projectId, isOwner }: { projectId: s
     setIsSubmitting(true);
     setHasError("");
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token = session?.backendToken;
       if (!token) {
         setHasError(t("auth.missingToken", { defaultValue: "No autorizado. Inicia sesión nuevamente." }));
         toast.error(t("auth.missingToken", { defaultValue: "No autorizado. Inicia sesión nuevamente." }));
