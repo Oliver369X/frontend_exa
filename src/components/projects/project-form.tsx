@@ -5,7 +5,6 @@ import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { getClientToken } from "@/lib/auth-client";
 
 const ProjectSchema = z.object({
   name: z.string().min(3),
@@ -44,35 +43,46 @@ export function ProjectForm({ onSuccess, initialData }: ProjectFormProps) {
     }
     setIsLoading(true);
     try {
-      const token = getClientToken();
       let res;
-      if (initialData?.id) {
-        // PATCH para editar proyecto existente
-        res = await fetch(`http://localhost:4000/projects/${initialData.id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(values),
-        });
-      } else {
-        // POST para crear nuevo proyecto
-        res = await fetch("http://localhost:4000/projects", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify(values),
-        });
+      const apiUrl = "/api/projects";
+      const payload = initialData?.id 
+        ? { ...values, id: initialData.id }
+        : values;
+      
+      console.log("[DEBUG] Submitting project data:", payload);
+      
+      res = await fetch(apiUrl, {
+        method: initialData?.id ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      const responseText = await res.text();
+      console.log(`[DEBUG] /projects ${initialData?.id ? "PUT" : "POST"} response:`, {
+        status: res.status,
+        text: responseText.substring(0, 200) + (responseText.length > 200 ? '...' : '')
+      });
+      
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error("Error parsing response:", e);
+        throw new Error("Invalid response format");
       }
-      const debugText = await res.clone().text();
-      console.log("[DEBUG] /projects POST/PATCH status:", res.status, debugText);
-      if (!res.ok) throw new Error("Error");
+      
+      if (!res.ok) {
+        console.error("Error submitting project:", res.status, data);
+        throw new Error(data.error || "Error creating/updating project");
+      }
+      
+      console.log("[DEBUG] Project saved successfully:", data);
       if (onSuccess) onSuccess();
-    } catch {
-      setHasError(t("form.error"));
+    } catch (error) {
+      console.error("Project submission error:", error);
+      setHasError(error instanceof Error ? error.message : t("form.error"));
     } finally {
       setIsLoading(false);
     }

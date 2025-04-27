@@ -1,13 +1,16 @@
 import { ClientPanel as EditorClientPanel } from "@/components/projects/client-panel"; // Renombrado para claridad
 import { CollaboratorManager } from "@/components/projects/collaborator-manager"; // Importar el nuevo componente
-import { LinkAccessLevel } from "@/types/project"; // Importar tipo necesario
+// import { LinkAccessLevel } from "@/types/project"; // ELIMINADO - No usado y causaba error
 import { getServerSession } from "next-auth/next"; // Importar getServerSession
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Importar authOptions
 import { getApiUrl } from "@/lib/api"; // Para construir URL de API
 import Link from 'next/link'; // Para el botón de Atrás
 import { Button } from '@/components/ui/button'; // Para los nuevos botones
-import { ArrowLeft, Download, Bot } from 'lucide-react'; // Iconos
-import { headers } from 'next/headers'; // Para obtener headers en Server Component
+import { Bot } from 'lucide-react'; // Iconos - Eliminados ArrowLeft, Download
+// import { headers } from 'next/headers'; // ELIMINADO - No usado
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+// import { getI18n } from '@/i18n/server'; // ELIMINADO - Usamos next-intl
+import { getTranslations } from 'next-intl/server'; // CORREGIDO - Importar getTranslations de next-intl
 
 interface ProjectData {
   id: string;
@@ -17,13 +20,14 @@ interface ProjectData {
 
 interface ProjectDetailServerProps {
   projectId: string;
+  locale: string; // Añadir locale como prop
 }
 
 /**
  * Server Component: Recibe el projectId, obtiene datos del proyecto,
  * y renderiza el editor y la barra de herramientas superior.
  */
-export default async function ProjectDetailServer({ projectId }: ProjectDetailServerProps) {
+export default async function ProjectDetailServer({ projectId, locale }: ProjectDetailServerProps) {
   // const token = await getToken(); // Ya no usamos getToken
   const session = await getServerSession(authOptions); // Usar getServerSession
   console.log("[Server Session Check] Session from getServerSession():", JSON.stringify(session, null, 2)); // Log de la sesión
@@ -65,17 +69,25 @@ export default async function ProjectDetailServer({ projectId }: ProjectDetailSe
     );
   }
 
+  // const { t } = await getI18n(); // ELIMINADO
+  const t = await getTranslations({ locale }); // Obtener función t con getTranslations y locale
+
   return (
     <main className="min-h-screen bg-white text-gray-900 dark:bg-neutral-950 dark:text-gray-100 transition-colors flex flex-col">
       {/* Barra Superior */}
       <div className="flex items-center justify-between p-3 md:p-4 border-b border-border flex-wrap gap-2">
         {/* Izquierda: Atrás y Título */}
         <div className="flex items-center gap-3">
-          <Link href="/projects" legacyBehavior>
-            <Button variant="outline" size="icon" aria-label="Volver a Proyectos">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link href="/projects">{t('projects.title')}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+            </BreadcrumbList>
+          </Breadcrumb>
           <h1 className="text-xl md:text-2xl font-semibold truncate" title={project.name}>
             {project.name}
           </h1>
@@ -84,7 +96,7 @@ export default async function ProjectDetailServer({ projectId }: ProjectDetailSe
         {/* Derecha: Controles (Solo si es owner) */}
         {isOwner && (
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled> {/* Botón Deshabilitado por ahora */}
+            <Button variant="outline" size="default" disabled> {/* CORREGIDO - size="default" */}
               <Bot className="mr-2 h-4 w-4" />
               Generar Código
             </Button>

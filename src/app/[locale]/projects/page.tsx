@@ -1,4 +1,5 @@
-import { getToken } from "@/lib/auth-guard";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -8,10 +9,18 @@ export default async function ProjectsPage({ params }: { params: { locale: strin
   // Next.js 14+ puede entregar params como promesa en ciertas configuraciones, así que mejor hacer:
   const awaitedParams = await params;
   const { locale } = awaitedParams;
-  const token = await getToken();
-  if (!token) {
+  
+  // Usar getServerSession
+  const session = await getServerSession(authOptions); 
+
+  // Verificar si existe la sesión
+  if (!session) { 
+    console.warn("[ProjectsPage Guard] No session found via getServerSession. Redirecting to login.");
     return redirect(`/${locale}/login`);
   }
+  
+  // Si la sesión existe, continuar
+  console.log("[ProjectsPage Guard] Session found via getServerSession. Access granted.");
   const t = await getTranslations({ locale, namespace: "projects" });
   return (
     <main className="flex min-h-screen bg-white text-gray-900 dark:bg-neutral-950 dark:text-gray-100 transition-colors">

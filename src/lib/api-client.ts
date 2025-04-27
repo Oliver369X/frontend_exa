@@ -8,13 +8,16 @@ if (!BASE_URL) {
 }
 
 /**
- * Placeholder function to get the auth token.
- * This will be replaced/integrated with a more robust session management approach.
- * Requires NextAuth types to be augmented to properly access `accessToken`.
+ * Obtiene el token de autenticación desde la sesión de NextAuth.
+ * Nota: Requiere que la sesión de NextAuth esté configurada para incluir `backendToken`.
  */
 async function getAuthToken(): Promise<string | null> {
   const session = await getSession();
-  const token = session?.user?.accessToken;
+  // Corregido: Obtener backendToken directamente de la sesión
+  const token = session?.backendToken;
+  if (!token) {
+      console.warn("[apiClient] No backendToken found in NextAuth session.");
+  }
   return token || null;
 }
 
@@ -46,17 +49,21 @@ export async function fetchApi<T = unknown>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const url = `${BASE_URL}${endpoint}`;
-  const token = await getAuthToken();
+  const url = endpoint; // Usar endpoint relativo directamente
+  // Eliminar la obtención del token aquí, ya que la API Route lo gestionará
+  // const token = await getAuthToken(); 
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
 
+  // No añadir cabecera Authorization aquí
+  /*
   if (token) {
     (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
+  */
 
   const config: RequestInit = {
     ...options,

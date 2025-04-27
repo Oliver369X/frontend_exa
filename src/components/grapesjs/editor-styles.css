@@ -1,4 +1,4 @@
-/* GrapesJS Editor Custom Styles */
+/* GrapesJS Editor Custom Styles - Minimalista */
 
 /* Editor container */
 .gjs-editor-cont {
@@ -7,48 +7,89 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-/* Canvas */
+/* Lienzo */
 .gjs-cv-canvas {
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background-color: hsl(var(--background)); 
+  border: none; 
 }
 
-/* Panels */
+/* Paneles internos de GrapesJS (Sección de Estilos, Capas, Atributos) */
 .gjs-pn-panel {
-  border-radius: 0.25rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  background-color: transparent; /* Hereda del contenedor (.editor-right-sidebar) */
+  color: hsl(var(--foreground)); 
+  border: none; 
+  box-shadow: none; 
+  margin-bottom: 0;
+  padding: 0; /* El padding está en el contenedor */
+}
+/* Selectores específicos para el contenido de los paneles si necesitan ajustes */
+.gjs-sm-sectors, .gjs-layers, .gjs-trt-traits {
+    background-color: transparent;
+}
+.gjs-sm-sector .gjs-sm-properties {
+    background-color: transparent;
 }
 
-/* Buttons */
+/* Botones internos de paneles */
 .gjs-pn-btn {
-  border-radius: 0.25rem;
-  transition: all 0.2s;
+  color: hsl(var(--muted-foreground)); /* Color suave por defecto */
+  border-radius: hsl(var(--radius)); 
+  transition: background-color 0.1s, color 0.1s;
+  padding: 0.25rem 0.5rem; 
+  border: none;
+  background-color: transparent;
+  box-shadow: none;
 }
 
 .gjs-pn-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: hsl(var(--accent)); 
+  color: hsl(var(--accent-foreground)); 
+}
+.gjs-pn-btn.gjs-pn-active {
+  background-color: hsl(var(--primary)); 
+  color: hsl(var(--primary-foreground)); 
 }
 
-/* Blocks */
+/* Estilos para botón Add Page (+) específico si es necesario */
+.gjs-pn-btn#add-page svg {
+  width: 16px; /* Ajustar tamaño icono */
+  height: 16px;
+}
+
+/* Bloques en el panel lateral izquierdo */
 .gjs-block {
-  border-radius: 0.25rem;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: all 0.2s;
+  background-color: hsl(var(--background)); /* Fondo más claro que el sidebar */
+  color: hsl(var(--foreground)); 
+  border: 1px solid hsl(var(--border)); 
+  border-radius: hsl(var(--radius)); 
+  padding: 0.5rem; /* p-2 */
+  margin-bottom: 0.5rem; 
+  text-align: center;
+  transition: all 0.1s;
+  width: 100% !important; 
+  min-height: auto !important;
+  box-shadow: none;
 }
 
 .gjs-block:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  transform: translateY(-2px);
+  border-color: hsl(var(--primary)); 
+  transform: none; /* Quitar transform */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Sombra sutil */
+}
+.gjs-block-label {
+  font-size: 0.75rem; /* text-xs */
+  color: hsl(var(--muted-foreground));
 }
 
-/* Selected component */
+/* Componente seleccionado en el lienzo */
 .gjs-selected {
-  outline: 2px solid #2563eb !important;
+  outline: 2px solid hsl(var(--primary)) !important; 
+  outline-offset: 1px !important;
 }
 
-/* Component hover */
+/* Hover sobre componente en el lienzo */
 .gjs-hovered {
-  outline: 1px solid #60a5fa !important;
+  outline: 1px dashed hsl(var(--primary) / 0.7) !important; 
 }
 
 /* Responsive adjustments */
@@ -98,16 +139,87 @@
   background-color: rgba(17, 24, 39, 0.7);
 }
 
-/* Improve toolbar visibility */
+/* Toolbar que aparece al seleccionar */
 .gjs-toolbar {
-  background-color: #2563eb;
-  border-radius: 0.25rem;
+  background-color: hsl(var(--popover)); /* Usar fondo de popover */
+  color: hsl(var(--popover-foreground));
+  border-radius: hsl(var(--radius));
+  padding: 0.25rem;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .gjs-toolbar-item {
-  color: white;
+  padding: 0.25rem;
+  border-radius: calc(hsl(var(--radius)) - 4px); /* Ajustar radio */
+  /* Intentar colorear iconos SVG */
+  & svg path { 
+    fill: currentColor; 
+  } 
 }
 
 .gjs-toolbar-item:hover {
-  background-color: #1d4ed8;
+  background-color: hsl(var(--accent)); 
+  color: hsl(var(--accent-foreground));
+}
+
+/* Estilos para que los paneles internos (Style, Layer, Trait) se vean bien */
+.gjs-sm-sector, .gjs-layer, .gjs-trait {
+  padding: 0.5rem 0; /* Añadir algo de padding vertical */
+  border-bottom: 1px solid hsl(var(--border) / 0.5); /* Separador sutil */
+}
+.gjs-sm-sector:last-child, .gjs-layer:last-child, .gjs-trait:last-child {
+  border-bottom: none;
+}
+.gjs-label, .gjs-layer-title, .gjs-trait-label {
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+}
+.gjs-field, .gjs-input-holder {
+  /* Estilizar campos de input si es necesario para que coincidan con Shadcn Input */
+}
+
+/* Otros estilos GrapesJS que podríamos querer ajustar: */
+/* .gjs-layer { ... } */
+/* .gjs-trait { ... } */
+/* .gjs-sm-sector { ... } */ /* Style Manager Sector */
+/* .gjs-field { ... } */ /* Campos dentro de panels */
+
+/* Contenedor de Paneles Derecho (Style, Layer, Trait) */
+.gjs-pn-views-container {
+  /* GrapesJS añade aquí los paneles. El contenedor ya tiene padding y fondo */
+  /* Podemos estilizar los botones que GrapesJS añade para cambiar entre ellos */
+  .gjs-pn-buttons {
+    display: flex;
+    justify-content: space-around; /* O flex-start */
+    border-bottom: 1px solid hsl(var(--border));
+    padding-bottom: 0.5rem; /* py-2 */
+    margin-bottom: 0.5rem; /* mb-2 */
+  }
+}
+
+/* Paneles individuales dentro del contenedor derecho */
+.gjs-pn-views .gjs-pn-panel {
+  border: none; /* Sin bordes extra dentro del contenedor */
+  background: transparent;
+  padding: 0; /* El padding está en el contenedor padre */
+}
+
+/* Gestor de páginas (cuando se abre el modal/panel) */
+.gjs-page-manager {
+  /* Estilos para el contenedor principal del gestor de páginas */
+}
+.gjs-page-manager-header {
+  /* Estilos para la cabecera */
+}
+.gjs-page-manager-pages {
+  /* Estilos para la lista de páginas */
+}
+.gjs-page-manager-page {
+  /* Estilos para cada item de página */
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  padding: 0.5rem;
+}
+.gjs-page-manager-page:hover {
+  background-color: hsl(var(--accent));
 }

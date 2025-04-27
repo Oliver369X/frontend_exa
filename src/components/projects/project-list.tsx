@@ -13,7 +13,6 @@ import {
   TableCell,
   TableCaption
 } from "@/components/ui/table";
-import { getClientToken } from "@/lib/auth-client";
 
 type Project = {
   id: string;
@@ -23,6 +22,10 @@ type Project = {
   isArchived?: boolean;
   status?: string;
 };
+
+interface ProjectApiResponse extends Omit<Project, 'status'> {
+  ownerId?: string;
+}
 
 export function ProjectList() {
   const t = useTranslations("projects");
@@ -46,28 +49,31 @@ export function ProjectList() {
     setIsLoading(true);
     setHasError("");
     try {
-      const token = getClientToken();
-      const res = await fetch("http://localhost:4000/projects", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const debugText = await res.clone().text();
-      console.log("[DEBUG] /projects status:", res.status, debugText);
-      if (!res.ok) throw new Error("Error");
-      let data;
-      try {
-        data = JSON.parse(debugText);
-      } catch {
-        data = [];
+      const res = await fetch("/api/projects");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: t("error") }));
+        console.error("Error fetching projects:", res.status, errorData);
+        throw new Error(errorData.error || t("error"));
       }
+      
+      const responseData = await res.json();
+      console.log("[DEBUG] Projects response:", responseData);
+      
+      // Verificar si la respuesta tiene la estructura esperada y extraer los proyectos
+      const projectsData = responseData.projects || [];
+      
       setProjects(
-        (Array.isArray(data) ? data : data.projects || []).map((p: any) => ({
-          ...p,
+        projectsData.map((p: ProjectApiResponse) => ({
+          id: p.id,
+          name: p.name,
           description: p.description ?? "-",
+          createdAt: p.createdAt,
+          isArchived: p.isArchived,
           status: typeof p.isArchived === "boolean" ? (p.isArchived ? t("archived") : t("active")) : "N/A",
         }))
       );
-    } catch {
-      setHasError(t("error"));
+    } catch(err) {
+      setHasError(err instanceof Error ? err.message : t("error"));
     } finally {
       setIsLoading(false);
     }
@@ -78,15 +84,16 @@ export function ProjectList() {
     setIsDeleting(true);
     setDeleteError("");
     try {
-      const token = getClientToken();
-      const res = await fetch(`http://localhost:4000/projects/${deleteProject.id}` , {
+      const res = await fetch(`/api/projects?id=${deleteProject.id}`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
       });
-      if (!res.ok) throw new Error("Error");
+      console.log("[DEBUG] /projects DELETE status:", res.status);
+      if (!res.ok) {
+        let errorDetails = {};
+        try { errorDetails = await res.json(); } catch { /* Ignorar */ }
+        console.error("Error deleting project:", res.status, errorDetails);
+        throw new Error("Error");
+      }
       setProjects((prev) => prev.filter((p) => p.id !== deleteProject.id));
       setDeleteProject(null);
     } catch {
@@ -159,7 +166,6 @@ export function ProjectList() {
           </TableBody>
         </Table>
       )}
-      {/* Modal para crear/editar proyecto */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white dark:bg-neutral-950 rounded-xl shadow-lg p-6 w-full max-w-md">
@@ -173,7 +179,6 @@ export function ProjectList() {
           </div>
         </div>
       )}
-      {/* Modal para eliminar proyecto */}
       {deleteProject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
           <div className="bg-white dark:bg-neutral-950 rounded-xl shadow-lg p-6 w-full max-w-sm">

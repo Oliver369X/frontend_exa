@@ -22,6 +22,7 @@ interface SocketContextProps extends UseSocketReturn {
   leaveProject: () => void;
   sendMessage: (message: string) => void;
   currentProjectId: string | null;
+  isProjectOwner: boolean;
 }
 
 // Create context with default values
@@ -30,6 +31,24 @@ const SocketContext = createContext<SocketContextProps | undefined>(undefined);
 interface SocketProviderProps {
   children: ReactNode;
 }
+
+// Agregar tipo para eventos de páginas
+type PageData = {
+  id: string;
+  name: string;
+  html?: string;
+  css?: string;
+  components?: Record<string, unknown>;
+};
+
+type PageEventData = {
+  pageId: string;
+  pageName?: string;
+  userId?: string;
+  timestamp?: number;
+  projectId?: string;
+  pageData?: PageData;
+};
 
 /**
  * Socket Provider Component
@@ -41,6 +60,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
   const [activeUsers, setActiveUsers] = useState<{ id: string; name: string }[]>([]);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false); // Estado para evitar joins múltiples
+  const [isProjectOwner, setIsProjectOwner] = useState(false); // Estado para controlar si el usuario es dueño del proyecto
   
   const socket = useSocket(); 
   
@@ -52,6 +72,26 @@ export function SocketProvider({ children }: SocketProviderProps) {
           socket.emit('user-join'); // El servidor obtiene datos del token/handshake
           setIsJoining(false); // Reseteamos el flag de join
           toast.success('Joined project room');
+          
+          // Comprobar si el usuario es propietario del proyecto
+          // Aquí puedes implementar tu lógica real para verificar la propiedad
+          // Por ahora usamos una comprobación básica con el ID del usuario de la sesión
+          if (session?.user?.id) {
+              // Ejemplo: verificar si el usuario es propietario del proyecto (ajustar según tu lógica)
+              const checkOwnership = async () => {
+                  try {
+                      // Si no tienes un endpoint específico, puedes usar una lógica temporal
+                      // Por ejemplo, si el proyecto contiene el ID del usuario como creador
+                      setIsProjectOwner(currentProjectId.includes(session.user.id));
+                      console.log(`[SocketProvider] User is ${isProjectOwner ? '' : 'not '}the owner of this project`);
+                  } catch (error) {
+                      console.error('[SocketProvider] Error checking project ownership:', error);
+                      setIsProjectOwner(false);
+                  }
+              };
+              
+              checkOwnership();
+          }
       }
       // Si perdemos conexión mientras estábamos unidos, reseteamos
       else if (!socket.isConnected && currentProjectId) {
@@ -59,8 +99,9 @@ export function SocketProvider({ children }: SocketProviderProps) {
           setCurrentProjectId(null);
           setActiveUsers([]);
           setIsJoining(false);
+          setIsProjectOwner(false);
       }
-  }, [socket.isConnected, isJoining, currentProjectId, socket.emit]);
+  }, [socket.isConnected, isJoining, currentProjectId, socket.emit, session?.user?.id, isProjectOwner]);
 
   // Set up event listeners cuando el socket conecte
   useEffect(() => {
@@ -98,6 +139,68 @@ export function SocketProvider({ children }: SocketProviderProps) {
     };
   }, [socket.isConnected, socket.on, socket.off, socket.socket]);
 
+  // En el useEffect donde se manejan los eventos del socket
+  useEffect(() => {
+    // ... manejadores existentes ...
+
+    // Agregar manejadores para eventos de páginas
+    const handlePageRequest = (data: { projectId: string }) => {
+      console.log('[Socket] Recibida solicitud de sincronización de páginas para el proyecto:', data.projectId);
+      
+      // Si somos el dueño del proyecto, enviar las páginas actuales
+      if (isProjectOwner && data.projectId === currentProjectId) {
+        // Intentar obtener las páginas del localStorage
+        try {
+          const pagesData = localStorage.getItem(`gjs-pages-${currentProjectId}`);
+          if (pagesData) {
+            const pages = JSON.parse(pagesData) as PageData[];
+            console.log(`[Socket] Enviando sincronización completa: ${pages.length} páginas`);
+            socket?.emit('page:full-sync', { pages, projectId: currentProjectId });
+          }
+        } catch (error) {
+          console.error('[Socket] Error al enviar sincronización de páginas:', error);
+        }
+      }
+    };
+
+    // Manejadores de eventos de páginas
+    socket?.on('page:request-sync', handlePageRequest);
+    
+    // También escuchar eventos específicos sobre páginas
+    socket?.on('page:add', (data: PageEventData) => {
+      console.log('[Socket] Página agregada por otro usuario:', data.pageName);
+    });
+    
+    socket?.on('page:remove', (data: PageEventData) => {
+      console.log('[Socket] Página eliminada por otro usuario:', data.pageName);
+    });
+    
+    socket?.on('page:update', (data: PageEventData) => {
+      console.log('[Socket] Página actualizada por otro usuario:', data.pageName);
+    });
+    
+    socket?.on('page:select', (data: PageEventData) => {
+      console.log('[Socket] Página seleccionada por otro usuario:', data.pageName);
+    });
+
+    // Al unirse a un proyecto, también solicitar sincronización de páginas
+    if (currentProjectId && socket?.connected) {
+      console.log('[Socket] Solicitando sincronización inicial de páginas');
+      socket.emit('page:request-sync', { projectId: currentProjectId });
+    }
+
+    return () => {
+      // ... limpieza de manejadores existentes ...
+      
+      // Limpieza de manejadores de páginas
+      socket?.off('page:request-sync', handlePageRequest);
+      socket?.off('page:add');
+      socket?.off('page:remove');
+      socket?.off('page:update');
+      socket?.off('page:select');
+    };
+  }, [socket, isProjectOwner, currentProjectId]);
+
   // --- Definir leaveProject ANTES que joinProject --- 
   /**
    * Leave the current project collaboration session
@@ -112,6 +215,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       setCurrentProjectId(null); 
       setActiveUsers([]);
       setIsJoining(false); // Asegurarse de resetear si se sale
+      setIsProjectOwner(false); // Resetear propiedad del proyecto
       
       // Considerar desconectar vs solo salir de la sala
       // socket.disconnect(); 
@@ -195,6 +299,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
     leaveProject,
     sendMessage,
     currentProjectId,
+    isProjectOwner,
   };
 
   return (

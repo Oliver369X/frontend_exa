@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+
+// Añadir esta línea para forzar ejecución dinámica (sin caché)
+export const dynamic = 'force-dynamic';
+
+// Helper para obtener el token de la sesión
+async function getTokenFromSession(): Promise<string | null> {
+  const session = await getServerSession(authOptions);
+  return session?.backendToken ?? null;
+}
 
 export async function GET(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  const token = await getTokenFromSession();
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -19,7 +30,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  const token = await getTokenFromSession();
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -40,7 +51,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  const token = await getTokenFromSession();
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -61,7 +72,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const token = req.cookies.get("token")?.value;
+  const token = await getTokenFromSession();
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
