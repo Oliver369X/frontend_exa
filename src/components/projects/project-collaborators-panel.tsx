@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useSession } from 'next-auth/react';
+import { getApiUrl } from '../../lib/api-config';
 
 /**
  * Panel para gestionar los colaboradores de un proyecto.
@@ -34,7 +35,7 @@ export function ProjectCollaboratorsPanel({ projectId, isOwner }: { projectId: s
         setHasError(t("auth.missingToken", { defaultValue: "No autorizado. Inicia sesión nuevamente." }));
         return;
       }
-      const res = await fetch(`http://localhost:4000/projects/${projectId}/permissions`, {
+      const res = await fetch(getApiUrl(`/projects/${projectId}/permissions`), {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -60,7 +61,7 @@ export function ProjectCollaboratorsPanel({ projectId, isOwner }: { projectId: s
         setIsSubmitting(false);
         return;
       }
-      const res = await fetch(`http://localhost:4000/projects/${projectId}/permissions`, {
+      const res = await fetch(getApiUrl(`/projects/${projectId}/permissions`), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +92,7 @@ export function ProjectCollaboratorsPanel({ projectId, isOwner }: { projectId: s
         setIsSubmitting(false);
         return;
       }
-      const res = await fetch(`http://localhost:4000/projects/${projectId}/permissions/${userId}`, {
+      const res = await fetch(getApiUrl(`/projects/${projectId}/permissions/${userId}`), {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

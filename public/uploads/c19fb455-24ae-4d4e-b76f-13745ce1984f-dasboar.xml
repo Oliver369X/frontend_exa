@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dashboard name="resumen_ventas" version="1.1">
+    <title>Panel de Resumen de Ventas Q3</title>
+    <description>Métricas clave de rendimiento de ventas para el tercer trimestre.</description>
+    <lastUpdated>2024-08-01T10:30:00Z</lastUpdated>
+
+    <layout>
+        <!-- Primera Fila: KPIs principales -->
+        <row id="row-1">
+            <widget id="kpi-ingresos" type="kpi" span="4">
+                <title>Ingresos Totales</title>
+                <dataSource>query_ingresos_trimestre</dataSource>
+                <valueField>totalRevenue</valueField>
+                <format type="currency" symbol="$" decimals="2"/>
+                <trend>
+                    <dataSource>query_ingresos_trimestre_anterior</dataSource>
+                    <valueField>totalRevenue</valueField>
+                    <label>vs Q2</label>
+                </trend>
+                <thresholds>
+                    <threshold value="50000" color="#FF0000"/> <!-- Rojo si es menor a 50k -->
+                    <threshold value="75000" color="#FFA500"/> <!-- Naranja si es menor a 75k -->
+                    <threshold value="100000" color="#008000"/> <!-- Verde si es >= 75k (implícito o explícito) -->
+                </thresholds>
+            </widget>
+
+            <widget id="kpi-clientes" type="kpi" span="4">
+                <title>Nuevos Clientes</title>
+                <dataSource>query_clientes_nuevos_q3</dataSource>
+                <valueField>customerCount</valueField>
+                <format type="integer"/>
+            </widget>
+
+            <widget id="gauge-satisfaccion" type="gauge" span="4">
+                <title>Satisfacción Cliente (CSAT)</title>
+                <dataSource>query_csat_q3</dataSource>
+                <valueField>averageScore</valueField>
+                <min>0</min>
+                <max>100</max>
+                <unit>%</unit>
+                <bands>
+                    <band start="0" end="60" color="red"/>
+                    <band start="60" end="80" color="orange"/>
+                    <band start="80" end="100" color="green"/>
+                </bands>
+            </widget>
+        </row>
+
+        <!-- Segunda Fila: Gráficos y Tablas -->
+        <row id="row-2">
+            <widget id="chart-ventas-mes" type="chart" span="6">
+                <title>Ventas por Mes</title>
+                <chartType>line</chartType> <!-- Opciones: bar, pie, area, scatter -->
+                <dataSource>query_ventas_mensuales_q3</dataSource>
+                <xAxis field="month" label="Mes"/>
+                <yAxis field="sales" label="Ventas ($)" format="currency"/>
+                <series>
+                    <serie field="category" label="Categoría Producto"/> <!-- Si hay desglose -->
+                </series>
+                <legend position="bottom"/>
+            </widget>
+
+            <widget id="table-top-productos" type="table" span="6">
+                <title>Top 5 Productos (por Ingresos)</title>
+                <dataSource>query_top_productos_q3</dataSource>
+                <columns>
+                    <column field="productName" header="Producto" width="50%"/>
+                    <column field="unitsSold" header="Unidades" align="right" format="integer"/>
+                    <column field="revenue" header="Ingresos" align="right" format="currency"/>
+                </columns>
+                <sorting field="revenue" direction="desc"/>
+                <pagination enabled="false" pageSize="5"/>
+            </widget>
+        </row>
+
+        <!-- Podrían definirse aquí las fuentes de datos -->
+        <!-- O podrían estar referenciadas a un sistema externo -->
+        <!-- <dataSources>
+            <source id="query_ingresos_trimestre" type="sql">
+                SELECT SUM(amount) as totalRevenue FROM sales WHERE quarter = 'Q3' AND year = 2024;
+            </source>
+             ...otros sources...
+        </dataSources> -->
+
+    </layout>
+</dashboard>

@@ -15,9 +15,17 @@ declare global {
 
 // Tipos utilizados en el editor
 export interface GrapesJSData {
-  components?: Record<string, any>[];
+  components?: any[] | string;
   styles?: string;
-  pages?: PageData[];
+  html?: string;
+  css?: string;
+  js?: string;
+  pages?: Array<{
+    id: string;
+    name: string;
+    html?: string;
+    css?: string;
+  }>;
 }
 
 export interface PageData {
@@ -28,29 +36,61 @@ export interface PageData {
   css?: string;
 }
 
+// Definir tipos para actualizaciones del editor
+export type EditorUpdateType = 
+  | 'component:add' 
+  | 'component:remove' 
+  | 'component:update' 
+  | 'component:move'
+  | 'style:update'
+  | 'style:add'
+  | 'style:remove'
+  | 'pages:update';
+
 export interface EditorDeltaUpdate {
-  type: 'component:add' | 'component:remove' | 'component:update' | 'style:update' | 'pages:update';
-  data: any;
+  type: EditorUpdateType;
+  data: Record<string, unknown>;
   componentId?: string;
   parentId?: string;
   index?: number;
-  pageId?: string;
 }
 
+// Definir tipo para la referencia al editor
 export interface SimpleGrapesEditorHandle {
-  getEditorInstance: () => Editor | null;
+  getEditorInstance: () => any;
 }
 
-// Interfaz para acciones del editor
+// Definir acciones que exponemos a través de window
 export interface GrapesJSActions {
-  showLayers: () => void;
-  showStyles: () => void;
-  showTraits: () => void;
-  setDeviceDesktop: () => void;
-  setDeviceTablet: () => void;
-  setDeviceMobile: () => void;
-  toggleComponentOutline: () => void;
-  togglePreview: () => void;
-  openPagesDialog: () => void;
-  exportHTML: () => void;
+  // Funciones básicas para obtener datos
+  getContent: () => Record<string, unknown>;
+  getHtml: () => string;
+  getCss: () => string; 
+  getJs: () => string;
+  getAllPages?: () => Array<{
+    id: string;
+    name: string;
+    html?: string;
+    css?: string;
+  }>;
+  
+  // Funciones para manipular el panel
+  showStyles?: () => void;
+  showLayers?: () => void;
+  showTraits?: () => void;
+  
+  // Funciones para manipular la vista
+  toggleComponentOutline?: () => void;
+  togglePreview?: () => void;
+  
+  // Funciones para manipular dispositivos
+  setDeviceDesktop?: () => void;
+  setDeviceTablet?: () => void;
+  setDeviceMobile?: () => void;
+  
+  // Funciones para manipular páginas
+  openPagesDialog?: () => void;
+  
+  // Funciones de exportación
+  exportHTML?: () => void;
 } 

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { ProjectLinkClient } from "./client";
+import { getApiUrl } from '../../../../../lib/api-config';
 
 interface LinkPageProps {
   params: { locale: string; token: string };
@@ -25,7 +26,7 @@ export default async function ProjectLinkPage({ params }: LinkPageProps) {
   let project: ProjectData | null = null;
   let linkAccess: "read" | "write" | null = null;
   try {
-    const res = await fetch(`http://localhost:4000/projects/link/${token}`);
+    const res = await fetch(getApiUrl(`/projects/link/${token}`));
     if (!res.ok) throw new Error("Not found");
     const data = await res.json();
     project = data.project;

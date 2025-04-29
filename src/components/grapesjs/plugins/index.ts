@@ -3,6 +3,7 @@ import businessBlocks from './businessBlocks';
 import enterpriseBlocks from './enterpriseBlocks';
 import pageManagerPlugin from './pageManager';
 import angularIntegrationPlugin from './angularIntegration';
+import importPlugin from './import-plugin';
 
 /**
  * Exportación de los plugins individuales para uso directo
@@ -11,7 +12,8 @@ export {
   businessBlocks,
   enterpriseBlocks,
   pageManagerPlugin,
-  angularIntegrationPlugin
+  angularIntegrationPlugin,
+  importPlugin
 };
 
 /**
@@ -24,6 +26,7 @@ const allPlugins: Plugin = (editor) => {
   enterpriseBlocks(editor);
   pageManagerPlugin(editor);
   angularIntegrationPlugin(editor);
+  importPlugin(editor);
   
   console.log('Todos los plugins cargados correctamente');
 };

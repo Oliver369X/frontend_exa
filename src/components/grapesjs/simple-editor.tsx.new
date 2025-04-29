@@ -1,0 +1,54 @@
+"use client";
+
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react";
+import grapesjs, { Editor } from "grapesjs";
+import "grapesjs/dist/css/grapes.min.css";
+import gjsBasicBlocks from "grapesjs-blocks-basic";
+import { ToolbarButton } from './components/ToolbarButton';
+import { TabButton } from './components/TabButton';
+import { DEFAULT_BLOCKS } from './config/blocks';
+import { GrapesJSActions, setupEditorActions } from './utils/editorActions';
+import type { GrapesJSData, EditorDeltaUpdate, SimpleGrapesEditorHandle } from './types';
+
+// Importar socket para la sincronización
+import { Socket } from 'socket.io-client';
+import { useSocketContext } from '@/components/socket';
+
+// Importar el servicio puente
+import { GrapesJSBridgeService } from './service/grapesjs-bridge.service';
+
+// Exportar los tipos principales para uso externo
+export type { GrapesJSData, EditorDeltaUpdate, SimpleGrapesEditorHandle };
+
+interface SimpleGrapesJSEditorProps {
+  initialContent: GrapesJSData | string | null;
+  onChange?: (update: EditorDeltaUpdate) => void; 
+  readOnly?: boolean;
+  projectId?: string; // ID del proyecto para guardar en la base de datos
+}
+
+// Declarar global con nuestras funciones
+declare global {
+  interface Window {
+    grapesJsActions?: GrapesJSActions;
+    currentProjectId?: string; // ID del proyecto actual para pageManager
+    socketInstance?: Socket; // Instancia del socket para comunicación en tiempo real
+  }
+}
+
+const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJSEditorProps>(
+  ({ initialContent, onChange, readOnly = false, projectId }, ref) => {
+    // Todo el código existente del componente
+    // ...
+
+    return (
+      <div className="grapesjs-editor h-full">
+        {/* Todo el JSX existente */}
+      </div>
+    );
+  }
+);
+
+SimpleGrapesJSEditor.displayName = "SimpleGrapesJSEditor";
+
+export default SimpleGrapesJSEditor; 

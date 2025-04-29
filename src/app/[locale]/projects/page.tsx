@@ -30,7 +30,7 @@ export default async function ProjectsPage({ params }: { params: { locale: strin
         </div>
         <Card className="shadow-sm w-full">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl font-bold">{t("title")}</CardTitle>
+            <CardTitle className="text-xl font-bold">{t("activeProjects")}</CardTitle>
           </CardHeader>
           <CardContent>
             {/* Aquí irá la lista de proyectos, asegúrate de que ProjectList use los estilos generales */}

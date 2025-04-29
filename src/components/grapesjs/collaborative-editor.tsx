@@ -7,6 +7,7 @@ import "grapesjs/dist/css/grapes.min.css";
 import "./editor-styles.css";
 import { toast } from "sonner";
 import gjsBasicBlocks from "grapesjs-blocks-basic";
+import { getApiUrl } from '../../lib/api-config';
 
 interface CollaborativeGrapesJSEditorProps {
   projectId: string;
@@ -71,7 +72,7 @@ export default function CollaborativeGrapesJSEditor({
       
       if (onChange) onChange(html);
       
-      const response = await fetch(`http://localhost:4000/projects/${projectId}/content`, {
+      const response = await fetch(getApiUrl(`/projects/${projectId}/content`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ html }),

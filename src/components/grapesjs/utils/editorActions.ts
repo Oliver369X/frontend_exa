@@ -1,5 +1,5 @@
-import type { Editor } from "grapesjs";
-import type { GrapesJSActions } from "../types";
+import { Editor } from 'grapesjs';
+import { GrapesJSActions } from '../types';
 import JSZip from 'jszip';
 
 // Agregar JSZip al objeto window para que esté disponible en el cliente
@@ -10,256 +10,138 @@ declare global {
 }
 
 /**
- * Configura las acciones del editor GrapesJS y las retorna como un objeto
+ * Configura las acciones disponibles para el editor GrapesJS.
+ * @param editor Instancia del editor
+ * @param createShowPanelFn Función para crear handler para mostrar paneles
+ * @returns Objeto con acciones disponibles
  */
-export const setupEditorActions = (
-  editor: Editor,
-  createShowPanelFn: (panelId: string) => () => void
-): GrapesJSActions => {
-  // Asignar JSZip a window para que esté disponible
-  if (typeof window !== 'undefined') {
-    window.JSZip = JSZip;
-  }
-
-  // Crear las acciones del editor
+export function setupEditorActions(editor: Editor, createShowPanelFn: (panelId: string) => () => void): GrapesJSActions {
   const actions: GrapesJSActions = {
-    // Funciones para mostrar diferentes paneles
-    showLayers: createShowPanelFn('layers'),
-    showStyles: createShowPanelFn('style'),
-    showTraits: createShowPanelFn('traits'),
+    // Funciones básicas para obtener datos
+    getContent: () => {
+      return {
+        components: editor.getComponents(),
+        styles: editor.getCss()
+      };
+    },
+    getHtml: () => editor.getHtml(),
+    getCss: () => editor.getCss(),
+    getJs: () => editor.getJs ? editor.getJs() : '',
     
-    // Funciones para cambiar el dispositivo
-    setDeviceDesktop: () => {
-      editor.setDevice('Desktop');
-    },
-    setDeviceTablet: () => {
-      editor.setDevice('Tablet');
-    },
-    setDeviceMobile: () => {
-      editor.setDevice('Mobile');
-    },
-    
-    // Función para alternar la visibilidad de los contornos de componentes
-    toggleComponentOutline: () => {
-      const canvas = editor.Canvas;
-      canvas.setConfig('showOffsets', !canvas.getConfig().showOffsets);
-      canvas.repaint();
-    },
-    
-    // Función para alternar el modo de vista previa
-    togglePreview: () => {
-      editor.Commands.isActive('core:preview')
-        ? editor.Commands.stop('core:preview')
-        : editor.Commands.run('core:preview');
-    },
-    
-    // Función para abrir el panel de páginas
-    openPagesDialog: () => {
-      // Si el editor tiene el administrador de páginas, abre el modal
+    // Opcional: Obtener todas las páginas si están disponibles
+    getAllPages: () => {
       if (editor.Pages) {
-        editor.runCommand('open-pages');
+        return editor.Pages.getAll().map(page => ({
+          id: page.get('id') as string,
+          name: page.get('name') as string,
+          html: page.getMainComponent() ? editor.getHtml({ component: page.getMainComponent() }) : '',
+          css: page.getMainComponent() ? editor.getCss({ component: page.getMainComponent() }) : ''
+        }));
+      }
+      return [];
+    },
+
+    // Funciones para manipular los paneles
+    showStyles: createShowPanelFn('style'),
+    showLayers: createShowPanelFn('layers'),
+    showTraits: createShowPanelFn('traits'),
+
+    // Funciones para manipular la vista
+    toggleComponentOutline: () => {
+      // Accedemos al canvas y alternamos la visualización de los contornos
+      try {
+        const canvas = editor.Canvas;
+        // @ts-ignore - Estas propiedades existen en GrapesJS pero no están bien tipadas
+        const currentState = canvas.getConfig().showOffsets || false;
+        // @ts-ignore - El método existe pero no está correctamente tipado
+        canvas.setConfig({ showOffsets: !currentState });
+        canvas.refresh();
+      } catch (e) {
+        console.error('Error al alternar contornos de componentes:', e);
       }
     },
     
-    // Función para exportar HTML
-    exportHTML: () => {
-      // Verificar si tiene múltiples páginas
-      if (editor.Pages && editor.Pages.getAll().length > 1) {
-        // Obtener todas las páginas
-        const pages = editor.Pages.getAll();
-        const pagesData = [];
-        
-        // Obtener CSS global que aplica a todas las páginas
-        const globalCss = editor.getCss();
-        
-        // Guardar página actual para restaurarla después
-        const currentPage = editor.Pages.getSelected();
-        
-        // Procesar cada página
-        pages.forEach(page => {
-          // Seleccionar la página para obtener su contenido
-          editor.Pages.select(page);
-          
-          const pageHtml = editor.getHtml();
-          const pageCss = editor.getCss({ avoidProtected: true });
-          
-          pagesData.push({
-            id: page.get('id'),
-            name: page.get('name'),
-            html: pageHtml,
-            css: pageCss
-          });
-        });
-        
-        // Restaurar página original
-        editor.Pages.select(currentPage);
-        
-        // Crear un archivo HTML para cada página
-        const jsZip = window.JSZip || null;
-        
-        if (jsZip) {
-          // Usar JSZip si está disponible
-          const zip = new jsZip();
-          
-          // Añadir archivo de índice
-          let indexHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Proyecto Exportado</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    h1 { color: #333; }
-    ul { padding: 0; }
-    li { margin-bottom: 10px; list-style: none; }
-    a { display: block; padding: 10px; background-color: #f5f5f5; color: #333; 
-        text-decoration: none; border-radius: 5px; }
-    a:hover { background-color: #e0e0e0; }
-  </style>
-</head>
-<body>
-  <h1>Páginas del Proyecto</h1>
-  <ul>`;
-          
-          // Añadir enlaces a cada página
-          pagesData.forEach(page => {
-            const safeFileName = page.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            indexHtml += `\n    <li><a href="${safeFileName}.html">${page.name}</a></li>`;
-          });
-          
-          indexHtml += `
-  </ul>
-</body>
-</html>`;
-          
-          zip.file('index.html', indexHtml);
-          
-          // Añadir archivos CSS comunes
-          zip.file('styles.css', globalCss);
-          
-          // Añadir cada página como un archivo HTML separado
-          pagesData.forEach(page => {
-            const safeFileName = page.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-            const pageHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${page.name}</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>${page.css}</style>
-</head>
-<body>
-  ${page.html}
-  <div style="margin-top: 30px; text-align: center;">
-    <a href="index.html" style="display: inline-block; padding: 10px 15px; background-color: #f5f5f5; color: #333; text-decoration: none; border-radius: 5px;">Volver al Índice</a>
-  </div>
-</body>
-</html>`;
-            
-            zip.file(`${safeFileName}.html`, pageHtml);
-          });
-          
-          // Generar y descargar el ZIP
-          zip.generateAsync({ type: 'blob' }).then(content => {
-            const url = URL.createObjectURL(content);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'proyecto-exportado.zip';
-            document.body.appendChild(a);
-            a.click();
-            
-            // Limpiar
-            setTimeout(() => {
-              document.body.removeChild(a);
-              URL.revokeObjectURL(url);
-            }, 100);
-          });
-        } else {
-          // Si JSZip no está disponible, exportar solo la página actual
-          const html = editor.getHtml();
-          const css = editor.getCss();
-          
-          // Mostrar un mensaje al usuario
-          alert('Para exportar múltiples páginas se requiere la librería JSZip. Se exportará solo la página actual.');
-          
-          // Combinar HTML y CSS en un string
-          const completeHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${currentPage.get('name')}</title>
-  <style>${css}</style>
-</head>
-<body>
-  ${html}
-</body>
-</html>`;
-          
-          // Crear un objeto Blob con el HTML
-          const blob = new Blob([completeHTML], { type: 'text/html' });
-          const url = URL.createObjectURL(blob);
-          
-          // Crear un enlace para descargar el archivo
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'pagina-exportada.html';
-          document.body.appendChild(a);
-          a.click();
-          
-          // Limpiar
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 100);
-        }
+    togglePreview: () => {
+      editor.Commands.isActive('preview') ? editor.Commands.stop('preview') : editor.Commands.run('preview');
+    },
+
+    // Funciones para manipular dispositivos
+    setDeviceDesktop: () => {
+      editor.setDevice('Desktop');
+      // Actualizar UI
+      document.querySelectorAll('#device-desktop, #device-tablet, #device-mobile').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById('device-desktop')?.classList.add('active');
+    },
+    
+    setDeviceTablet: () => {
+      editor.setDevice('Tablet');
+      // Actualizar UI
+      document.querySelectorAll('#device-desktop, #device-tablet, #device-mobile').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById('device-tablet')?.classList.add('active');
+    },
+    
+    setDeviceMobile: () => {
+      editor.setDevice('Mobile');
+      // Actualizar UI
+      document.querySelectorAll('#device-desktop, #device-tablet, #device-mobile').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.getElementById('device-mobile')?.classList.add('active');
+    },
+
+    // Función para manipular páginas
+    openPagesDialog: () => {
+      if (editor.Commands.has('open-pages')) {
+        editor.Commands.run('open-pages');
       } else {
-        // Exportar una sola página (comportamiento actual)
-        const html = editor.getHtml();
-        const css = editor.getCss();
-        
-        // Combinar HTML y CSS en un string
-        const completeHTML = `
+        console.error('Comando open-pages no encontrado');
+        alert('La administración de páginas no está disponible en esta versión');
+      }
+    },
+
+    // Funciones de exportación
+    exportHTML: () => {
+      const html = editor.getHtml();
+      const css = editor.getCss();
+      
+      // Crear una estructura de página HTML completa
+      const fullHtml = `
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Página Exportada</title>
-  <style>${css}</style>
+  <style>
+${css}
+  </style>
 </head>
 <body>
-  ${html}
+${html}
 </body>
 </html>`;
-        
-        // Crear un objeto Blob con el HTML
-        const blob = new Blob([completeHTML], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        
-        // Crear un enlace para descargar el archivo
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'pagina-exportada.html';
-        document.body.appendChild(a);
-        a.click();
-        
-        // Limpiar
-        setTimeout(() => {
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }, 100);
-      }
+      
+      // Crear un blob con el HTML completo
+      const blob = new Blob([fullHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      
+      // Crear un enlace para descargar el archivo
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pagina-exportada-${new Date().getTime()}.html`;
+      a.click();
+      
+      // Liberar la URL
+      URL.revokeObjectURL(url);
     }
   };
-  
+
   return actions;
-};
+}
 
 // Exportamos la interfaz para que sea accesible
 export type { GrapesJSActions }; 

@@ -66,6 +66,7 @@
     "deleting": "Eliminando...",
     "cancel": "Cancelar",
     "loading": "Cargando proyectos...",
+    "activeProjects": "Proyectos activos",
     "shared": {
       "edit_access": "Acceso de edición",
       "view_access": "Acceso de visualización",

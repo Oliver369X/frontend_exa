@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { getApiUrl } from '../../../../../lib/api-config';
 
 interface ProjectData {
   id: string;
@@ -41,7 +42,7 @@ export function ProjectLinkClient({
     
     try {
       setIsSaving(true);
-      await fetch(`http://localhost:4000/projects/${project.id}/content`, {
+      await fetch(getApiUrl(`/projects/${project.id}/content`), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

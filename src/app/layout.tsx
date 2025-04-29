@@ -6,6 +6,10 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import AppSessionProvider from "@/components/session-provider";
 import { SocketProvider } from "@/components/socket";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+// Estilos personalizados para sobrescribir Bootstrap y arreglar modo oscuro
+import "./custom-override.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

@@ -1,0 +1,70 @@
+/* Estilos personalizados para sobreescribir Bootstrap */
+
+/* Forzar colores específicos para modo oscuro */
+@media (prefers-color-scheme: dark) {
+  /* Restablece el fondo y texto para modo oscuro */
+  .dark\:bg-neutral-950 {
+    background-color: rgb(8, 8, 10) !important;
+  }
+  
+  .dark\:text-gray-100 {
+    color: rgb(239, 239, 242) !important;
+  }
+  
+  /* Forzar estilos para las tarjetas en modo oscuro */
+  .dark .card,
+  .dark .card-header,
+  .dark .card-body,
+  .dark .card-footer {
+    background-color: rgb(22, 22, 24) !important;
+    color: rgb(239, 239, 242) !important;
+    border-color: rgb(38, 38, 40) !important;
+  }
+  
+  /* Estilos para botones en modo oscuro */
+  .dark .btn {
+    background-color: rgb(38, 38, 40) !important;
+    color: rgb(239, 239, 242) !important;
+    border-color: rgb(50, 50, 52) !important;
+  }
+  
+  /* Estilos para inputs en modo oscuro */
+  .dark input,
+  .dark textarea,
+  .dark select {
+    background-color: rgb(22, 22, 24) !important;
+    color: rgb(239, 239, 242) !important;
+    border-color: rgb(38, 38, 40) !important;
+  }
+}
+
+/* Resolución para sobreposicionar los estilos de componentes propios */
+.text-gray-900 {
+  color: rgb(16, 16, 18) !important;
+}
+
+.bg-white {
+  background-color: #fff !important;
+}
+
+.dark .dark\:bg-neutral-950 {
+  background-color: rgb(8, 8, 10) !important;
+}
+
+.dark .dark\:text-gray-100 {
+  color: rgb(239, 239, 242) !important;
+}
+
+/* Transiciones suaves para cambio de temas */
+body {
+  transition: background-color 0.3s ease, color 0.3s ease !important;
+}
+
+/* Correcciones para las tarjetas */
+.shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.dark .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
+} 
