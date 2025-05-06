@@ -2,13 +2,17 @@
 
 import { useEffect, useRef, useState } from 'react';
 import sdk from '@stackblitz/sdk';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { Terminal } from '../terminal/Terminal';
-import type { VM, Project, ProjectFiles, EmbedOptions } from '@stackblitz/sdk';
+import type { VM, Project, EmbedOptions } from '@stackblitz/sdk';
+
 
 interface EnhancedStackblitzEmbedProps {
   projectId: string;
   generatedCode?: string;
+}
+
+// Define los tipos necesarios para el filesystem de StackBlitz
+interface StackBlitzFs {
+  [path: string]: string | { directory: boolean };
 }
 
 export function EnhancedStackblitzEmbed({ projectId, generatedCode }: EnhancedStackblitzEmbedProps) {
@@ -16,11 +20,13 @@ export function EnhancedStackblitzEmbed({ projectId, generatedCode }: EnhancedSt
   const vmRef = useRef<VM | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pendingFiles, setPendingFiles] = useState<ProjectFiles>({});
-  const [processingFiles, setProcessingFiles] = useState(false);
+  const [showFallbackView, setShowFallbackView] = useState(false);
+  const lastCodeRef = useRef<string | undefined>(undefined);
   
-  // Configuración inicial del proyecto de StackBlitz
+  // Crear y embeber el proyecto de StackBlitz
   useEffect(() => {
+    if (showFallbackView) return;
+
     const setupProject = async () => {
       if (!containerRef.current) return;
       
@@ -28,286 +34,306 @@ export function EnhancedStackblitzEmbed({ projectId, generatedCode }: EnhancedSt
         setIsLoading(true);
         setError(null);
         
-        // Proyecto Angular básico
-        const project: Project = {
-          title: `Angular Project - ${projectId}`,
-          description: 'Generated Angular Project',
+        // Limpiar contenedor existente
+        containerRef.current.innerHTML = '';
+
+        // Proyecto mínimo para Angular - Asegurar que projectId es válido
+        const safeProjectId = projectId && typeof projectId === 'string' 
+          ? projectId.slice(0, 8) 
+          : 'angular-app';
+        
+        // Proyecto mínimo para Angular
+        const simpleProject: Project = {
+          title: `Angular App - ${safeProjectId}`,
+          description: 'Angular Simplified App',
           template: 'angular-cli',
           files: {
-            'src/main.ts': `import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
-import { AppComponent } from './app/app.component';
-
-bootstrapApplication(AppComponent, appConfig)
-  .catch((err) => console.error(err));
-`,
             'src/app/app.component.ts': `import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet],
   template: \`
-    <h1>Welcome to {{ title }}!</h1>
-    <router-outlet></router-outlet>
-  \`
+    <div style="padding: 20px; font-family: Arial, sans-serif;">
+      <h1>¡Proyecto Angular creado!</h1>
+      <p>Usa el chat para generar código.</p>
+    </div>
+  \`,
+  styles: [\`
+    h1 { color: #3f51b5; }
+    p { color: #666; }
+  \`]
 })
 export class AppComponent {
   title = 'Angular App';
 }
-`,
-            'src/app/app.config.ts': `import { ApplicationConfig } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { routes } from './app.routes';
-
-export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(routes)]
-};
-`,
-            'src/app/app.routes.ts': `import { Routes } from '@angular/router';
-
-export const routes: Routes = [];
 `
-          },
-          settings: {
-            compile: {
-              clearConsole: true,
-            }
           }
         };
         
-        // Opciones de incrustación
-        const options: EmbedOptions = {
-          openFile: 'src/app/app.component.ts',
-          terminalHeight: 30,
-          view: 'editor',
-          hideNavigation: false,
-          height: '100%'
-        };
+        // Si hay código generado, actualizar el proyecto
+        if (generatedCode) {
+          try {
+            // Extraer bloques de código con formato ```typescript:path/to/file.ts
+            const codeBlockRegex = /```(?:typescript|html|css|json|scss|js|jsx|ts|tsx):([^\n]+)\n([\s\S]*?)```/g;
+            let match;
+            
+            while ((match = codeBlockRegex.exec(generatedCode)) !== null) {
+              const [, filePath, fileContent] = match;
+              if (filePath && fileContent) {
+                simpleProject.files[filePath.trim()] = fileContent.trim();
+              }
+            }
+          } catch (err) {
+            console.warn('Error al procesar código generado:', err);
+          }
+        }
         
-        console.log('[StackBlitz] Inicializando proyecto:', project.title);
-        
-        // Crear y embeber el proyecto
+        // Embeber el proyecto directamente en la página
         try {
-          const vm = await sdk.embedProject(containerRef.current, project, options);
+          // Opciones para el proyecto embebido
+          const options: EmbedOptions = {
+            openFile: 'src/app/app.component.ts',
+            hideNavigation: false,
+            height: '100%',
+            theme: 'dark',  // Tema oscuro para mejor legibilidad
+            clickToLoad: false,
+            forceEmbedLayout: true
+          };
+          
+          // Crear el iframe embebido
+          const vm = await sdk.embedProject(containerRef.current, simpleProject, options);
           vmRef.current = vm;
-          console.log('[StackBlitz] Proyecto creado y embebido exitosamente');
           
-          // Configurar manejador de comandos del terminal
-          vm.terminal.addEventListener('command', async (event) => {
-            console.log('[StackBlitz Terminal] Comando ejecutado:', event.command);
-          });
-          
-          // Procesar código generado si existe
-          if (generatedCode) {
-            const extractedFiles = extractFilesFromMarkdown(generatedCode);
-            if (Object.keys(extractedFiles).length > 0) {
-              setPendingFiles(extractedFiles);
+          // Intentar aplicar tema oscuro para mejor legibilidad si está disponible
+          try {
+            if (vm && vm.editor) {
+              vm.editor.setTheme('dark');
             }
+          } catch (err) {
+            console.warn('No se pudo configurar el tema:', err);
           }
-        } catch (embedError) {
-          console.error('[StackBlitz] Error al configurar StackBlitz:', embedError);
-          setError(`Error al configurar StackBlitz: ${embedError}`);
-        } finally {
+
+          setIsLoading(false);
+          
+          // Guardar el código actual como referencia
+          lastCodeRef.current = generatedCode;
+        } catch (error) {
+          console.error('Error al embeber StackBlitz:', error);
+          setShowFallbackView(true);
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('[StackBlitz] Error global:', error);
-        setError(`Error global: ${error}`);
+        console.error('Error general:', error);
+        setError(`Error: ${error}`);
         setIsLoading(false);
+        setShowFallbackView(true);
       }
     };
-    
+
     setupProject();
-  }, [projectId]);
-  
-  // Manejar cambios en el código generado
-  useEffect(() => {
-    if (!generatedCode || !vmRef.current || processingFiles) return;
     
-    const processGeneratedCode = async () => {
-      try {
-        setProcessingFiles(true);
-        const extractedFiles = extractFilesFromMarkdown(generatedCode);
-        
-        if (Object.keys(extractedFiles).length > 0) {
-          console.log('[StackBlitz] Archivos extraídos del código:', Object.keys(extractedFiles));
-          setPendingFiles(prev => ({...prev, ...extractedFiles}));
-        } else {
-          console.log('[StackBlitz] No se encontraron archivos en el código generado');
-        }
-      } catch (error) {
-        console.error('[StackBlitz] Error al procesar código generado:', error);
-      } finally {
-        setProcessingFiles(false);
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
       }
+      vmRef.current = null;
     };
-    
-    processGeneratedCode();
-  }, [generatedCode]);
+  }, [projectId, showFallbackView]);
   
-  // Aplicar cambios pendientes a los archivos
+  // Efecto separado para actualizar el editor cuando cambia el código generado
   useEffect(() => {
-    if (!vmRef.current || Object.keys(pendingFiles).length === 0 || processingFiles) return;
+    // Si no hay VM, no hay editor que actualizar
+    if (!vmRef.current || !generatedCode || generatedCode === lastCodeRef.current) {
+      return;
+    }
     
-    const applyFileChanges = async () => {
+    // Función para actualizar archivos en el editor existente
+    const updateEditorFiles = async () => {
       try {
-        setProcessingFiles(true);
         const vm = vmRef.current;
         if (!vm) return;
         
-        console.log('[StackBlitz] Aplicando cambios a archivos:', Object.keys(pendingFiles));
+        // Extraer bloques de código con formato ```typescript:path/to/file.ts
+        const codeBlockRegex = /```(?:typescript|html|css|json|scss|js|jsx|ts|tsx):([^\n]+)\n([\s\S]*?)```/g;
+        let match;
+        let updatedFiles = false;
         
-        // Antes de escribir, obtener lista de archivos existentes
-        const existingFiles = await vm.getFsSnapshot();
+        // Crear un objeto que contiene todos los archivos a crear
+        const filesToCreate: Record<string, string> = {};
         
-        for (const [path, content] of Object.entries(pendingFiles)) {
-          // Verificar si el archivo ya existe
-          const fileExists = existingFiles.files[path];
-          
-          if (fileExists) {
-            // Modificar archivo existente
-            await vm.fs.writeFile(path, content);
-          } else {
-            // Crear nuevo directorio y archivo
-            const dirPath = path.split('/').slice(0, -1).join('/');
-            await vm.fs.mkdir(dirPath, { recursive: true });
-            await vm.fs.writeFile(path, content, { create: true });
+        while ((match = codeBlockRegex.exec(generatedCode)) !== null) {
+          const [, filePath, fileContent] = match;
+          if (filePath && fileContent) {
+            // Agregar el archivo a la lista para crear
+            filesToCreate[filePath.trim()] = fileContent.trim();
+            
+            // Verificar si necesitamos crear directorios
+            const pathParts = filePath.trim().split('/');
+            pathParts.pop(); // Eliminar el nombre del archivo
+            if (pathParts.length > 0) {
+              const directory = pathParts.join('/');
+              console.log('Se usará el directorio:', directory);
+            }
           }
         }
         
-        // Limpiar archivos pendientes procesados
-        setPendingFiles({});
+        // Aplicar todos los cambios de una sola vez si es posible
+        if (Object.keys(filesToCreate).length > 0) {
+          try {
+            // Usar la API de FS para crear los archivos
+            const fsDiff = {
+              create: filesToCreate,
+              destroy: [] // No eliminamos archivos
+            };
+            
+            await vm.applyFsDiff(fsDiff);
+            console.log('Archivos actualizados en el editor');
+            updatedFiles = true;
+          } catch (error) {
+            console.error('Error al aplicar cambios al filesystem:', error);
+            
+            // Alternativa: intentar crear archivos individualmente
+            try {
+              for (const [path, content] of Object.entries(filesToCreate)) {
+                try {
+                  // @ts-ignore - Algunos entornos de StackBlitz tienen un método fs.writeFile
+                  await vm.fs.writeFile(path, content);
+                  console.log(`Creado archivo ${path}`);
+                  updatedFiles = true;
+                } catch (err) {
+                  console.error(`No se pudo crear ${path}:`, err);
+                }
+              }
+            } catch (e) {
+              console.error('Falló el intento alternativo de crear archivos');
+            }
+          }
+        }
+        
+        // Si se actualizaron archivos, abrir el primero que se modificó
+        if (updatedFiles && vm && vm.editor) {
+          try {
+            const firstBlockMatch = generatedCode.match(codeBlockRegex);
+            if (firstBlockMatch && firstBlockMatch[0]) {
+              const firstFilePathMatch = firstBlockMatch[0].match(/```(?:.*?):([^\n]+)/);
+              if (firstFilePathMatch && firstFilePathMatch[1]) {
+                const firstFilePath = firstFilePathMatch[1].trim();
+                vm.editor.openFile(firstFilePath);
+              }
+            }
+          } catch (error) {
+            console.warn('No se pudo abrir el archivo:', error);
+          }
+        }
+        
+        // Actualizar referencia del último código
+        lastCodeRef.current = generatedCode;
       } catch (error) {
-        console.error('[StackBlitz] Error al aplicar cambios de archivos:', error);
-      } finally {
-        setProcessingFiles(false);
+        console.error('Error al actualizar archivos en el editor:', error);
       }
     };
     
-    applyFileChanges();
-  }, [pendingFiles, processingFiles]);
-  
-  // Función mejorada para extraer archivos del markdown
-  function extractFilesFromMarkdown(markdown: string): ProjectFiles {
-    const files: ProjectFiles = {};
+    // Actualizar los archivos en el editor
+    updateEditorFiles();
     
-    // Regex mejorado para capturar bloques de código con nombre de archivo
-    // Soporta varios formatos comunes en markdown
-    const codeBlockRegex = /```(?:(?:typescript|javascript|ts|js|html|css|scss|json|xml|([a-zA-Z]+))\s*(?:\n|^))?(?:([^\n]+)\n)?([\s\S]*?)```/g;
+  }, [generatedCode]);
+
+  // Si hay error, mostrar una vista alternativa
+  useEffect(() => {
+    if (error || showFallbackView) {
+      renderFallbackView();
+    }
+  }, [error, showFallbackView, generatedCode]);
+
+  // Función para mostrar una vista alternativa
+  const renderFallbackView = () => {
+    if (!containerRef.current) return;
     
-    let match;
-    while ((match = codeBlockRegex.exec(markdown)) !== null) {
-      let language = match[1] || '';
-      let filePath = match[2] || '';
-      const code = match[3].trim();
-      
-      // Si no hay una ruta de archivo explícita, intentar inferirla
-      if (!filePath || filePath.startsWith('// ') || filePath.startsWith('/* ')) {
-        // Buscar en el contenido por comentarios que puedan indicar el archivo
-        const filePathComment = code.match(/\/\/\s*(?:file|path):\s*([^\n]+)/i) || 
-                               code.match(/\/\*\s*(?:file|path):\s*([^\n]+)\s*\*\//i);
-        
-        if (filePathComment) {
-          filePath = filePathComment[1].trim();
-        } else if (language) {
-          // Inferir basado en el lenguaje
-          const extension = getExtensionFromLanguage(language);
-          if (extension) {
-            // Generar un nombre basado en el contenido
-            const contentHash = Math.abs(hashCode(code)).toString(16).substring(0, 6);
-            filePath = `src/generated/${language}-${contentHash}.${extension}`;
-          }
-        }
-      }
-      
-      // Limpiar la ruta de archivo (quitar prefijos de comentarios)
-      if (filePath.startsWith('// ')) {
-        filePath = filePath.substring(3).trim();
-      } else if (filePath.startsWith('/* ')) {
-        filePath = filePath.replace(/\/\*|\*\//g, '').trim();
-      }
-      
-      // Si tenemos una ruta de archivo válida, agregar al objeto de archivos
-      if (filePath && code) {
-        // Asegurarse de que la ruta tenga un formato adecuado
-        if (!filePath.startsWith('src/')) {
-          filePath = `src/${filePath}`;
-        }
-        
-        files[filePath] = code;
-      }
+    containerRef.current.innerHTML = '';
+    
+    const fallbackView = document.createElement('div');
+    fallbackView.className = 'flex flex-col h-full bg-white';
+    
+    const header = document.createElement('div');
+    header.className = 'bg-amber-50 p-4 border-b border-amber-200';
+    header.innerHTML = `
+      <div class="flex items-center">
+        <svg class="w-6 h-6 text-amber-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span class="font-medium">El editor no pudo cargarse. Puedes ver el código generado a continuación.</span>
+      </div>
+    `;
+    
+    const content = document.createElement('div');
+    content.className = 'flex-1 p-4 overflow-auto';
+    
+    if (generatedCode) {
+      content.innerHTML = `
+        <div class="mb-4 flex justify-between items-center">
+          <h2 class="text-lg font-semibold">Código Angular Generado</h2>
+          <button id="fallback-copy-btn" class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">Copiar todo</button>
+        </div>
+        <pre class="bg-gray-50 p-4 rounded-lg border text-sm font-mono overflow-auto">${generatedCode.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+      `;
+    } else {
+      content.innerHTML = `
+        <div class="flex items-center justify-center h-full">
+          <div class="text-center">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No hay código para visualizar</h3>
+            <p class="mt-1 text-sm text-gray-500">Genera código primero usando la IA.</p>
+          </div>
+        </div>
+      `;
     }
     
-    return files;
-  }
-  
-  // Función auxiliar para obtener extensión de archivo según el lenguaje
-  function getExtensionFromLanguage(language: string): string {
-    const languageMap: Record<string, string> = {
-      'typescript': 'ts',
-      'javascript': 'js',
-      'html': 'html',
-      'css': 'css',
-      'scss': 'scss',
-      'json': 'json',
-      'bash': 'sh',
-      'shell': 'sh',
-      'xml': 'xml',
-      'ts': 'ts',
-      'js': 'js'
-    };
+    // Botón para reintentar la carga del editor
+    const retryButtonContainer = document.createElement('div');
+    retryButtonContainer.className = 'mt-4 text-center';
+    retryButtonContainer.innerHTML = `
+      <button id="retry-editor-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        Reintentar cargar el editor
+      </button>
+    `;
+    content.appendChild(retryButtonContainer);
     
-    return languageMap[language.toLowerCase()] || language.toLowerCase();
-  }
-  
-  // Función para generar un hash simple de un string
-  function hashCode(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convertir a entero de 32 bits
-    }
-    return hash;
-  }
-  
-  // Función para ejecutar comandos en el terminal
-  const executeCommand = async (command: string): Promise<boolean> => {
-    if (!vmRef.current) return false;
+    fallbackView.appendChild(header);
+    fallbackView.appendChild(content);
+    containerRef.current.appendChild(fallbackView);
     
-    try {
-      await vmRef.current.terminal.sendCommand(command);
-      return true;
-    } catch (error) {
-      console.error('[StackBlitz] Error al ejecutar comando:', error);
-      return false;
-    }
+    // Agregar funcionalidad a los botones
+    setTimeout(() => {
+      const copyBtn = document.getElementById('fallback-copy-btn');
+      if (copyBtn && generatedCode) {
+        copyBtn.addEventListener('click', () => {
+          navigator.clipboard.writeText(generatedCode);
+          copyBtn.textContent = 'Copiado!';
+          setTimeout(() => {
+            copyBtn.textContent = 'Copiar todo';
+          }, 2000);
+        });
+      }
+      
+      const retryBtn = document.getElementById('retry-editor-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+          setShowFallbackView(false);
+        });
+      }
+    }, 100);
   };
   
   return (
     <div className="stackblitz-container h-full relative">
-      {isLoading && (
+      {isLoading && !showFallbackView && (
         <div className="absolute inset-0 bg-gray-100 bg-opacity-70 flex items-center justify-center z-10">
           <div className="text-center p-4 bg-white rounded shadow-lg">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-3"></div>
             <p className="text-lg font-semibold">Cargando editor...</p>
-            <p className="text-sm text-gray-600 mt-2">Configurando el entorno de Angular</p>
-          </div>
-        </div>
-      )}
-      
-      {error && (
-        <div className="absolute inset-0 bg-red-100 bg-opacity-80 flex items-center justify-center z-10">
-          <div className="text-center p-4 bg-white rounded shadow-lg max-w-md">
-            <p className="text-lg font-semibold text-red-600">Error al configurar StackBlitz</p>
-            <p className="text-sm mt-2">{error}</p>
-            <button 
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={() => window.location.reload()}
-            >
-              Reintentar
-            </button>
+            <p className="text-sm text-gray-600 mt-2">Esto puede tardar unos segundos</p>
           </div>
         </div>
       )}

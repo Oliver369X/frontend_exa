@@ -96,12 +96,12 @@ export default async function ProjectDetailServer({ projectId, locale }: Project
         {/* Derecha: Controles (Solo si es owner) */}
         {isOwner && (
           <div className="flex items-center gap-2">
-            <Link href={`/projects/${project.id}/generate-code`}>
+              <Link href={`/projects/${project.id}/generate-code`}>
               <Button variant="outline" asChild={false}>
                 <Bot className="mr-2 h-4 w-4" />
                 Generar Código
               </Button>
-            </Link>
+              </Link>
             <CollaboratorManager projectId={projectId} isOwner={isOwner} />
           </div>
         )}

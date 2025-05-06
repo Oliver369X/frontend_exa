@@ -9,7 +9,7 @@ export interface PageData {
   name: string;
   html?: string;
   css?: string;
-  components?: any;
+  components?: unknown;
   isDefault?: boolean;
 }
 
@@ -202,6 +202,13 @@ class PagesSyncService {
     if (!this.isReady() || this.isCurrentlyLoading) return;
     
     const editor = this.editor!;
+    
+    // Verificar si Pages existe en el editor
+    if (!editor.Pages) {
+      console.error('[PagesSyncService] editor.Pages no está definido');
+      return;
+    }
+    
     const currentPage = editor.Pages.getSelected();
     
     if (!currentPage) {

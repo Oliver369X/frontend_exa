@@ -9,18 +9,31 @@ interface GrapesJSComponent {
   type?: string;
   tagName?: string;
   content?: string;
-  attributes?: Record<string, any>;
+  attributes?: Record<string, unknown>;
   components?: GrapesJSComponent[];
   classes?: {
     models: Array<{id: string}>
   };
 }
 
+interface GrapesJSStyle {
+  selectors: unknown;
+  style: Record<string, string>;
+  mediaText?: string;
+}
+
+interface GrapesJSAsset {
+  type: string;
+  src: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
 interface GrapesJSDesign {
   components?: GrapesJSComponent[];
-  styles?: any[];
-  assets?: any[];
-  [key: string]: any;
+  styles?: GrapesJSStyle[];
+  assets?: GrapesJSAsset[];
+  [key: string]: unknown;
 }
 
 export class GrapesJSParserService {
@@ -91,8 +104,8 @@ export class GrapesJSParserService {
     /**
      * Construye un árbol de componentes
      */
-    private static buildComponentTree(components: GrapesJSComponent[], parentId: string = '') {
-      const result: any = {};
+    private static buildComponentTree(components: GrapesJSComponent[]) {
+      const result: Record<string, ComponentTreeNode> = {};
       
       components.forEach(component => {
         const id = component.id || component.cid;
@@ -104,7 +117,7 @@ export class GrapesJSParserService {
           tagName: component.tagName,
           attributes: component.attributes || {},
           children: component.components ? 
-            this.buildComponentTree(component.components, id) : 
+            this.buildComponentTree(component.components) : 
             {}
         };
       });
@@ -115,19 +128,19 @@ export class GrapesJSParserService {
     /**
      * Aplana la estructura de componentes para fácil acceso
      */
-    private static flattenComponents(components: GrapesJSComponent[], result: any[] = [], parentId: string = '') {
+    private static flattenComponents(components: GrapesJSComponent[], result: FlatComponent[] = [], parentId: string = '') {
       components.forEach(component => {
         const id = component.id || component.cid;
         if (!id) return;
         
-        const flatComponent = {
+        const flatComponent: FlatComponent = {
           id,
           parentId,
           type: component.type,
           tagName: component.tagName,
           content: component.content,
           attributes: component.attributes || {},
-          classes: component.classes ? component.classes.models.map((c: any) => c.id) : [],
+          classes: component.classes ? component.classes.models.map((c) => c.id) : [],
         };
         
         result.push(flatComponent);
@@ -140,3 +153,22 @@ export class GrapesJSParserService {
       return result;
     }
   }
+
+// Tipos adicionales para el resultado de los métodos
+interface ComponentTreeNode {
+  id: string;
+  type?: string;
+  tagName?: string;
+  attributes: Record<string, unknown>;
+  children: Record<string, ComponentTreeNode>;
+}
+
+interface FlatComponent {
+  id: string;
+  parentId: string;
+  type?: string;
+  tagName?: string;
+  content?: string;
+  attributes: Record<string, unknown>;
+  classes: string[];
+}

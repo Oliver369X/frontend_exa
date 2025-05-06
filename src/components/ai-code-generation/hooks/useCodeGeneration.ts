@@ -14,19 +14,6 @@ interface Provider {
   status: string;
 }
 
-// Declaración global para acceder a GrapesJS desde window
-declare global {
-  interface Window {
-    grapesJsActions?: {
-      getContent: () => Record<string, unknown>;
-      getHtml: () => string;
-      getCss: () => string;
-      getJs: () => string;
-      getAllPages?: () => Array<{id: string, name: string, html?: string, css?: string}>;
-    };
-  }
-}
-
 export function useCodeGeneration(projectId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);

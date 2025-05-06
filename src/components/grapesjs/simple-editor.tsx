@@ -1,13 +1,10 @@
 "use client";
 
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react";
-import grapesjs, { Editor, ProjectData } from "grapesjs";
-import type { Editor as GrapesJSEditor } from "grapesjs";
+import grapesjs, { Editor,  } from "grapesjs";
 import "grapesjs/dist/css/grapes.min.css";
 import gjsBasicBlocks from "grapesjs-blocks-basic";
-import allPlugins from './plugins';
 import { businessBlocks, enterpriseBlocks, pageManagerPlugin, angularIntegrationPlugin } from './plugins';
-import cn from 'classnames';
 
 // Importar componentes y utilidades desde archivos separados
 import { ToolbarButton } from './components/ToolbarButton';
@@ -155,216 +152,348 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
         },
         deviceManager: {
           devices: [
-              { name: "Desktop", width: "" },
-              { name: "Tablet", width: "768px", widthMedia: "768px" },
-              { name: "Mobile", width: "320px", widthMedia: "480px" },
-            ],
-          },
-          // Cargar solo gjsBasicBlocks en la inicialización
-          plugins: [
-            gjsBasicBlocks,
-            businessBlocks,
-            enterpriseBlocks,
-            angularIntegrationPlugin,
-            pageManagerPlugin,
-            ImportPlugin,
-            // ImageImporterPlugin, // Comentado hasta implementación completa
+            { name: "Desktop", width: "" },
+            { name: "Tablet", width: "768px", widthMedia: "768px" },
+            { name: "Mobile", width: "320px", widthMedia: "480px" },
           ],
-          canvas: {
-            styles: ["https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"],
-            scripts: ["https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"],
-            frameStyle: `
-              body { 
-                margin: 0;
-                padding: 0 !important;
-                background-color: #fff;
+        },
+        // Cargar solo gjsBasicBlocks en la inicialización
+        plugins: [
+          gjsBasicBlocks,
+          // Carga condicional de plugins que podrían causar errores
+          (editor) => {
+            try {
+              if (typeof businessBlocks === 'function') {
+                businessBlocks(editor, {});
               }
-              * ::-webkit-scrollbar {
-                width: 8px;
-                height: 8px;
-              }
-            `
-          },
-        });
-
-        editorRefInternal.current = editor;
-
-        // Cargar contenido inicial primero
-        if (initialContent) {
-            if (typeof initialContent === 'object' && initialContent !== null) {
-              if (Array.isArray(initialContent.components) && initialContent.components.length > 0) {
-                editor.addComponents(initialContent.components);
-              } else if (!readOnly) {
-                editor.setComponents('<h1>Start Editing</h1>');
-              }
-              if (typeof initialContent.styles === 'string') {
-                editor.setStyle(initialContent.styles);
-              }
-            } else if (typeof initialContent === 'string') {
-          editor.setComponents(initialContent);
-            } else if (!readOnly) {
-              editor.setComponents('<h1>Start Editing</h1>');
+            } catch (error) {
+              console.warn('Error al cargar businessBlocks:', error);
             }
+          },
+          (editor) => {
+            try {
+              if (typeof enterpriseBlocks === 'function') {
+                enterpriseBlocks(editor, {});
+              }
+            } catch (error) {
+              console.warn('Error al cargar enterpriseBlocks:', error);
+            }
+          },
+          pageManagerPlugin,
+          ImportPlugin,
+          // ImageImporterPlugin, // Comentado hasta implementación completa
+        ],
+        canvas: {
+          styles: ["https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"],
+          scripts: ["https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"],
+          frameStyle: `
+            body { 
+              margin: 0;
+              padding: 0 !important;
+              background-color: #fff;
+            }
+            * ::-webkit-scrollbar {
+              width: 8px;
+              height: 8px;
+            }
+            `
+        },
+      });
+
+      editorRefInternal.current = editor;
+
+      // Cargar contenido inicial primero
+      if (initialContent) {
+        if (typeof initialContent === 'object' && initialContent !== null) {
+          if (Array.isArray(initialContent.components) && initialContent.components.length > 0) {
+            editor.addComponents(initialContent.components);
           } else if (!readOnly) {
             editor.setComponents('<h1>Start Editing</h1>');
+          }
+          if (typeof initialContent.styles === 'string') {
+            editor.setStyle(initialContent.styles);
+          }
+        } else if (typeof initialContent === 'string') {
+          editor.setComponents(initialContent);
+        } else if (!readOnly) {
+          editor.setComponents('<h1>Start Editing</h1>');
         }
+      } else if (!readOnly) {
+        editor.setComponents('<h1>Start Editing</h1>');
+      }
 
-        // Modo de solo lectura
-        if (readOnly) {
-            editor.Commands.stop('core:component-select');
-            editor.Commands.stop('core:component-move');
-            editor.Commands.stop('core:component-delete');
-            editor.Commands.run('core:preview');
-          editor.UndoManager.clear();
-        }
+      // Modo de solo lectura
+      if (readOnly) {
+        editor.Commands.stop('core:component-select');
+        editor.Commands.stop('core:component-move');
+        editor.Commands.stop('core:component-delete');
+        editor.Commands.run('core:preview');
+        editor.UndoManager.clear();
+      }
 
-        // Mejorar la configuración del editor con comandos propios
-        editor.Commands.add('open-pages', {
-          run: (editor) => {
-            // Crear modal para administrar páginas
-            if (!editor.Pages) {
-              console.error('No se encontró el administrador de páginas');
-              return;
-            }
-            
-            const pages = editor.Pages.getAll();
-            const modalContainer = document.createElement('div');
-            modalContainer.className = 'gjs-mdl-dialog gjs-one-bg gjs-two-color';
-            modalContainer.innerHTML = `
-              <div class="gjs-mdl-header">
-                <div class="gjs-mdl-title">Administrar Páginas</div>
-                <div class="gjs-mdl-btn-close" id="gjs-mdl-btn-close">×</div>
-              </div>
-              <div class="gjs-mdl-content">
-                <div id="pages-container" class="pages-container">
-                  <div class="pages-header">
-                    <div class="page-header-cell">Nombre</div>
-                    <div class="page-header-cell">Acciones</div>
-                  </div>
-                  <div id="pages-list" class="pages-list">
-                    ${pages.map(page => `
-                      <div class="page-row" data-page-id="${page.get('id')}">
-                        <div class="page-cell page-name">
-                          <span>${page.get('name')}</span>
-                        </div>
-                        <div class="page-cell page-actions">
-                          <button class="page-select ${editor.Pages.getSelected().get('id') === page.get('id') ? 'active' : ''}">Ver</button>
-                          <button class="page-edit">Editar</button>
-                          <button class="page-delete" ${pages.length <= 1 ? 'disabled' : ''}>Eliminar</button>
-                        </div>
+      // Mejorar la configuración del editor con comandos propios
+      editor.Commands.add('open-pages', {
+        run: (editor) => {
+          // Crear modal para administrar páginas
+          if (!editor.Pages) {
+            console.error('No se encontró el administrador de páginas');
+            return;
+          }
+          
+          const pages = editor.Pages.getAll();
+          const modalContainer = document.createElement('div');
+          modalContainer.className = 'gjs-mdl-dialog gjs-one-bg gjs-two-color';
+          modalContainer.innerHTML = `
+            <div class="gjs-mdl-header">
+              <div class="gjs-mdl-title">Administrar Páginas</div>
+              <div class="gjs-mdl-btn-close" id="gjs-mdl-btn-close">×</div>
+            </div>
+            <div class="gjs-mdl-content">
+              <div id="pages-container" class="pages-container">
+                <div class="pages-header">
+                  <div class="page-header-cell">Nombre</div>
+                  <div class="page-header-cell">Acciones</div>
+                </div>
+                <div id="pages-list" class="pages-list">
+                  ${pages.map(page => `
+                    <div class="page-row" data-page-id="${page.get('id')}">
+                      <div class="page-cell page-name">
+                        <span>${page.get('name')}</span>
                       </div>
-                    `).join('')}
-                  </div>
-                  <div class="pages-footer">
-                    <button id="add-new-page">Añadir página</button>
-                  </div>
+                      <div class="page-cell page-actions">
+                        <button class="page-select ${editor.Pages.getSelected().get('id') === page.get('id') ? 'active' : ''}">Ver</button>
+                        <button class="page-edit">Editar</button>
+                        <button class="page-delete" ${pages.length <= 1 ? 'disabled' : ''}>Eliminar</button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="pages-footer">
+                  <button id="add-new-page">Añadir página</button>
                 </div>
               </div>
-            `;
-            
-            // Agregar estilos
-            const style = document.createElement('style');
-            style.innerHTML = `
-              .pages-container {
-                padding: 10px;
+            </div>
+          `;
+          
+          // Agregar estilos
+          const style = document.createElement('style');
+          style.innerHTML = `
+            .pages-container {
+              padding: 10px;
+            }
+            .pages-header {
+              display: grid;
+              grid-template-columns: 1fr 150px;
+              border-bottom: 1px solid rgba(0,0,0,0.1);
+              padding-bottom: 5px;
+              margin-bottom: 10px;
+              font-weight: bold;
+            }
+            .pages-list {
+              max-height: 300px;
+              overflow-y: auto;
+            }
+            .page-row {
+              display: grid;
+              grid-template-columns: 1fr 150px;
+              border-bottom: 1px solid rgba(0,0,0,0.05);
+              padding: 8px 0;
+            }
+            .page-cell {
+              display: flex;
+              align-items: center;
+            }
+            .page-actions {
+              display: flex;
+              gap: 5px;
+            }
+            .page-actions button {
+              padding: 3px 8px;
+              background: var(--gjs-color-light);
+              border: none;
+              border-radius: 3px;
+              cursor: pointer;
+            }
+            .page-actions button:hover {
+              background: var(--gjs-color-lighter);
+            }
+            .page-actions button.active {
+              background: var(--gjs-color-action);
+              color: white;
+            }
+            .page-actions button:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+            .pages-footer {
+              margin-top: 15px;
+              display: flex;
+              justify-content: flex-end;
+            }
+            #add-new-page {
+              padding: 7px 15px;
+              background: var(--gjs-color-action);
+              color: white;
+              border: none;
+              border-radius: 3px;
+              cursor: pointer;
+            }
+          `;
+          
+          document.body.appendChild(style);
+          document.body.appendChild(modalContainer);
+          
+          // Eventos
+          const closeBtn = modalContainer.querySelector('#gjs-mdl-btn-close');
+          closeBtn?.addEventListener('click', () => {
+            document.body.removeChild(modalContainer);
+            document.body.removeChild(style);
+          });
+          
+          // Seleccionar página
+          const selectButtons = modalContainer.querySelectorAll('.page-select');
+          selectButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const pageRow = (e.target as HTMLElement).closest('.page-row');
+              const pageId = pageRow?.getAttribute('data-page-id');
+              if (pageId) {
+                editor.Pages.select(pageId);
+                
+                // Actualizar botones
+                document.querySelectorAll('.page-select').forEach(el => {
+                  el.classList.remove('active');
+                });
+                (e.target as HTMLElement).classList.add('active');
               }
-              .pages-header {
-                display: grid;
-                grid-template-columns: 1fr 150px;
-                border-bottom: 1px solid rgba(0,0,0,0.1);
-                padding-bottom: 5px;
-                margin-bottom: 10px;
-                font-weight: bold;
-              }
-              .pages-list {
-                max-height: 300px;
-                overflow-y: auto;
-              }
-              .page-row {
-                display: grid;
-                grid-template-columns: 1fr 150px;
-                border-bottom: 1px solid rgba(0,0,0,0.05);
-                padding: 8px 0;
-              }
-              .page-cell {
-                display: flex;
-                align-items: center;
-              }
-              .page-actions {
-                display: flex;
-                gap: 5px;
-              }
-              .page-actions button {
-                padding: 3px 8px;
-                background: var(--gjs-color-light);
-                border: none;
-                border-radius: 3px;
-                cursor: pointer;
-              }
-              .page-actions button:hover {
-                background: var(--gjs-color-lighter);
-              }
-              .page-actions button.active {
-                background: var(--gjs-color-action);
-                color: white;
-              }
-              .page-actions button:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-              }
-              .pages-footer {
-                margin-top: 15px;
-                display: flex;
-                justify-content: flex-end;
-              }
-              #add-new-page {
-                padding: 7px 15px;
-                background: var(--gjs-color-action);
-                color: white;
-                border: none;
-                border-radius: 3px;
-                cursor: pointer;
-              }
-            `;
-            
-            document.body.appendChild(style);
-            document.body.appendChild(modalContainer);
-            
-            // Eventos
-            const closeBtn = modalContainer.querySelector('#gjs-mdl-btn-close');
-            closeBtn?.addEventListener('click', () => {
-              document.body.removeChild(modalContainer);
-              document.body.removeChild(style);
             });
-            
-            // Seleccionar página
-            const selectButtons = modalContainer.querySelectorAll('.page-select');
-            selectButtons.forEach(btn => {
-              btn.addEventListener('click', (e) => {
-                const pageRow = (e.target as HTMLElement).closest('.page-row');
-                const pageId = pageRow?.getAttribute('data-page-id');
-                if (pageId) {
-                  editor.Pages.select(pageId);
+          });
+          
+          // Editar nombre de página
+          const editButtons = modalContainer.querySelectorAll('.page-edit');
+          editButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const pageRow = (e.target as HTMLElement).closest('.page-row');
+              const pageId = pageRow?.getAttribute('data-page-id');
+              const nameCell = pageRow?.querySelector('.page-name');
+              const nameSpan = nameCell?.querySelector('span');
+              
+              if (pageId && nameCell && nameSpan) {
+                const currentName = nameSpan.textContent || '';
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentName;
+                input.style.width = '100%';
+                input.style.padding = '3px 5px';
+                input.style.boxSizing = 'border-box';
+                
+                // Reemplazar span por input
+                nameCell.replaceChild(input, nameSpan);
+                input.focus();
+                
+                // Guardar al perder foco
+                input.addEventListener('blur', () => {
+                  const newName = input.value.trim() || currentName;
+                  nameSpan.textContent = newName;
+                  nameCell.replaceChild(nameSpan, input);
                   
-                  // Actualizar botones
-                  document.querySelectorAll('.page-select').forEach(el => {
-                    el.classList.remove('active');
-                  });
-                  (e.target as HTMLElement).classList.add('active');
+                  // Actualizar en el editor
+                  const page = editor.Pages.get(pageId);
+                  if (page) {
+                    page.set('name', newName);
+                  }
+                });
+                
+                // Guardar con Enter
+                input.addEventListener('keydown', (e) => {
+                  if (e.key === 'Enter') {
+                    input.blur();
+                  }
+                });
+              }
+            });
+          });
+          
+          // Eliminar página
+          const deleteButtons = modalContainer.querySelectorAll('.page-delete');
+          deleteButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              const pageRow = (e.target as HTMLElement).closest('.page-row');
+              const pageId = pageRow?.getAttribute('data-page-id');
+              if (pageId) {
+                if (confirm('¿Estás seguro de que deseas eliminar esta página?')) {
+                  // Verificar si es la página seleccionada
+                  const isSelected = editor.Pages.getSelected().get('id') === pageId;
+                  
+                  // Si hay al menos otra página, eliminamos la actual
+                  if (editor.Pages.getAll().length > 1) {
+                    // Si es la seleccionada, seleccionar otra antes de eliminar
+                    if (isSelected) {
+                      const pages = editor.Pages.getAll();
+                      const otherPage = pages.find(p => p.get('id') !== pageId);
+                      if (otherPage) {
+                        editor.Pages.select(otherPage.get('id'));
+                      }
+                    }
+                    
+                    // Eliminar la página
+                    editor.Pages.remove(pageId);
+                    
+                    // Eliminar la fila
+                    if (pageRow) {
+                      pageRow.remove();
+                    }
+                  }
                 }
-              });
+              }
+            });
+          });
+          
+          // Añadir nueva página
+          const addPageBtn = modalContainer.querySelector('#add-new-page');
+          addPageBtn?.addEventListener('click', () => {
+            const pageId = `page-${Date.now()}`;
+            const pageName = `Nueva Página ${editor.Pages.getAll().length + 1}`;
+            
+            // Crear nueva página
+            editor.Pages.add({
+              id: pageId,
+              name: pageName
             });
             
-            // Editar nombre de página
-            const editButtons = modalContainer.querySelectorAll('.page-edit');
-            editButtons.forEach(btn => {
-              btn.addEventListener('click', (e) => {
-                const pageRow = (e.target as HTMLElement).closest('.page-row');
-                const pageId = pageRow?.getAttribute('data-page-id');
-                const nameCell = pageRow?.querySelector('.page-name');
+            // Agregar a la lista
+            const pagesList = modalContainer.querySelector('#pages-list');
+            if (pagesList) {
+              const pageRow = document.createElement('div');
+              pageRow.className = 'page-row';
+              pageRow.setAttribute('data-page-id', pageId);
+              pageRow.innerHTML = `
+                <div class="page-cell page-name">
+                  <span>${pageName}</span>
+                </div>
+                <div class="page-cell page-actions">
+                  <button class="page-select">Ver</button>
+                  <button class="page-edit">Editar</button>
+                  <button class="page-delete">Eliminar</button>
+                </div>
+              `;
+              pagesList.appendChild(pageRow);
+              
+              // Actualizar eventos en los botones nuevos
+              const selectBtn = pageRow.querySelector('.page-select');
+              selectBtn?.addEventListener('click', () => {
+                editor.Pages.select(pageId);
+                document.querySelectorAll('.page-select').forEach(el => {
+                  el.classList.remove('active');
+                });
+                selectBtn.classList.add('active');
+              });
+              
+              const editBtn = pageRow.querySelector('.page-edit');
+              editBtn?.addEventListener('click', (e) => {
+                const nameCell = pageRow.querySelector('.page-name');
                 const nameSpan = nameCell?.querySelector('span');
                 
-                if (pageId && nameCell && nameSpan) {
+                if (nameCell && nameSpan) {
                   const currentName = nameSpan.textContent || '';
                   const input = document.createElement('input');
                   input.type = 'text';
@@ -373,24 +502,20 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
                   input.style.padding = '3px 5px';
                   input.style.boxSizing = 'border-box';
                   
-                  // Reemplazar span por input
                   nameCell.replaceChild(input, nameSpan);
                   input.focus();
                   
-                  // Guardar al perder foco
                   input.addEventListener('blur', () => {
                     const newName = input.value.trim() || currentName;
                     nameSpan.textContent = newName;
                     nameCell.replaceChild(nameSpan, input);
                     
-                    // Actualizar en el editor
                     const page = editor.Pages.get(pageId);
                     if (page) {
                       page.set('name', newName);
                     }
                   });
                   
-                  // Guardar con Enter
                   input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
                       input.blur();
@@ -398,298 +523,170 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
                   });
                 }
               });
-            });
-            
-            // Eliminar página
-            const deleteButtons = modalContainer.querySelectorAll('.page-delete');
-            deleteButtons.forEach(btn => {
-              btn.addEventListener('click', (e) => {
-                const pageRow = (e.target as HTMLElement).closest('.page-row');
-                const pageId = pageRow?.getAttribute('data-page-id');
-                if (pageId) {
-                  if (confirm('¿Estás seguro de que deseas eliminar esta página?')) {
-                    // Verificar si es la página seleccionada
-                    const isSelected = editor.Pages.getSelected().get('id') === pageId;
-                    
-                    // Si hay al menos otra página, eliminamos la actual
-                    if (editor.Pages.getAll().length > 1) {
-                      // Si es la seleccionada, seleccionar otra antes de eliminar
-                      if (isSelected) {
-                        const pages = editor.Pages.getAll();
-                        const otherPage = pages.find(p => p.get('id') !== pageId);
-                        if (otherPage) {
-                          editor.Pages.select(otherPage.get('id'));
-                        }
-                      }
-                      
-                      // Eliminar la página
-                      editor.Pages.remove(pageId);
-                      
-                      // Eliminar la fila
-                      if (pageRow) {
-                        pageRow.remove();
+              
+              const deleteBtn = pageRow.querySelector('.page-delete');
+              deleteBtn?.addEventListener('click', () => {
+                if (confirm('¿Estás seguro de que deseas eliminar esta página?')) {
+                  const isSelected = editor.Pages.getSelected().get('id') === pageId;
+                  
+                  if (editor.Pages.getAll().length > 1) {
+                    if (isSelected) {
+                      const pages = editor.Pages.getAll();
+                      const otherPage = pages.find(p => p.get('id') !== pageId);
+                      if (otherPage) {
+                        editor.Pages.select(otherPage.get('id'));
                       }
                     }
+                    
+                    editor.Pages.remove(pageId);
+                    pageRow.remove();
                   }
                 }
               });
-            });
-            
-            // Añadir nueva página
-            const addPageBtn = modalContainer.querySelector('#add-new-page');
-            addPageBtn?.addEventListener('click', () => {
-              const pageId = `page-${Date.now()}`;
-              const pageName = `Nueva Página ${editor.Pages.getAll().length + 1}`;
               
-              // Crear nueva página
-              editor.Pages.add({
-                id: pageId,
-                name: pageName
+              // Seleccionar la nueva página automáticamente
+              editor.Pages.select(pageId);
+              document.querySelectorAll('.page-select').forEach(el => {
+                el.classList.remove('active');
               });
-              
-              // Agregar a la lista
-              const pagesList = modalContainer.querySelector('#pages-list');
-              if (pagesList) {
-                const pageRow = document.createElement('div');
-                pageRow.className = 'page-row';
-                pageRow.setAttribute('data-page-id', pageId);
-                pageRow.innerHTML = `
-                  <div class="page-cell page-name">
-                    <span>${pageName}</span>
-                  </div>
-                  <div class="page-cell page-actions">
-                    <button class="page-select">Ver</button>
-                    <button class="page-edit">Editar</button>
-                    <button class="page-delete">Eliminar</button>
-                  </div>
-                `;
-                pagesList.appendChild(pageRow);
-                
-                // Actualizar eventos en los botones nuevos
-                const selectBtn = pageRow.querySelector('.page-select');
-                selectBtn?.addEventListener('click', () => {
-                  editor.Pages.select(pageId);
-                  document.querySelectorAll('.page-select').forEach(el => {
-                    el.classList.remove('active');
-                  });
-                  selectBtn.classList.add('active');
-                });
-                
-                const editBtn = pageRow.querySelector('.page-edit');
-                editBtn?.addEventListener('click', (e) => {
-                  const nameCell = pageRow.querySelector('.page-name');
-                  const nameSpan = nameCell?.querySelector('span');
-                  
-                  if (nameCell && nameSpan) {
-                    const currentName = nameSpan.textContent || '';
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.value = currentName;
-                    input.style.width = '100%';
-                    input.style.padding = '3px 5px';
-                    input.style.boxSizing = 'border-box';
-                    
-                    nameCell.replaceChild(input, nameSpan);
-                    input.focus();
-                    
-                    input.addEventListener('blur', () => {
-                      const newName = input.value.trim() || currentName;
-                      nameSpan.textContent = newName;
-                      nameCell.replaceChild(nameSpan, input);
-                      
-                      const page = editor.Pages.get(pageId);
-                      if (page) {
-                        page.set('name', newName);
-                      }
-                    });
-                    
-                    input.addEventListener('keydown', (e) => {
-                      if (e.key === 'Enter') {
-                        input.blur();
-                      }
-                    });
-                  }
-                });
-                
-                const deleteBtn = pageRow.querySelector('.page-delete');
-                deleteBtn?.addEventListener('click', () => {
-                  if (confirm('¿Estás seguro de que deseas eliminar esta página?')) {
-                    const isSelected = editor.Pages.getSelected().get('id') === pageId;
-                    
-                    if (editor.Pages.getAll().length > 1) {
-                      if (isSelected) {
-                        const pages = editor.Pages.getAll();
-                        const otherPage = pages.find(p => p.get('id') !== pageId);
-                        if (otherPage) {
-                          editor.Pages.select(otherPage.get('id'));
-                        }
-                      }
-                      
-                      editor.Pages.remove(pageId);
-                      pageRow.remove();
-                    }
-                  }
-                });
-                
-                // Seleccionar la nueva página automáticamente
-                editor.Pages.select(pageId);
-                document.querySelectorAll('.page-select').forEach(el => {
-                  el.classList.remove('active');
-                });
-                selectBtn?.classList.add('active');
-              }
-            });
-          }
-        });
+              selectBtn?.classList.add('active');
+            }
+          });
+        }
+      });
 
-        // Configurar acciones del editor
-        window.grapesJsActions = setupEditorActions(editor, createShowPanelFn);
+      // Configurar acciones del editor
+      window.grapesJsActions = setupEditorActions(editor, createShowPanelFn);
 
-        // Añadir comando personalizado para administrar páginas
+      // Añadir comando personalizado para administrar páginas
+      if (window.grapesJsActions) {
         window.grapesJsActions.openPagesDialog = () => {
           editor.Commands.run('open-pages');
         };
+      }
 
-        // Inicializar plugins adicionales una vez que el editor esté listo
-        // Esto asegura que el editor esté completamente inicializado antes de cargar nuestros plugins
-        console.log('[Editor] Inicializando plugins personalizados...');
+      // Inicializar plugins adicionales una vez que el editor esté listo
+      // Esto asegura que el editor esté completamente inicializado antes de cargar nuestros plugins
+      console.log('[Editor] Inicializando plugins personalizados...');
+      
+      // Timeout para asegurar que el editor está completamente inicializado
+      setTimeout(() => {
+        try {
+          console.log('[Editor] Inicializando plugins personalizados...');
+          
+          // Usar los plugins importados directamente
+          if (typeof angularIntegrationPlugin === 'function') {
+            try {
+              angularIntegrationPlugin(editor, {});
+              console.log('[Editor] Plugin angularIntegrationPlugin cargado');
+            } catch (error) {
+              console.error('[Editor] Error al cargar angularIntegrationPlugin:', error);
+            }
+          }
         
-        // Timeout para asegurar que el editor está completamente inicializado
-        setTimeout(() => {
-          try {
-            console.log('[Editor] Inicializando plugins personalizados...');
-            
-            // Usar los plugins importados directamente
-            if (typeof businessBlocks === 'function') {
-              try {
-                businessBlocks(editor);
-                console.log('[Editor] Plugin businessBlocks cargado');
-              } catch (error) {
-                console.error('[Editor] Error al cargar businessBlocks:', error);
-              }
+          if (typeof pageManagerPlugin === 'function') {
+            try {
+              pageManagerPlugin(editor, {});
+              console.log('[Editor] Plugin pageManagerPlugin cargado');
+            } catch (error) {
+              console.error('[Editor] Error al cargar pageManagerPlugin:', error);
             }
-            
-            if (typeof enterpriseBlocks === 'function') {
-              try {
-                enterpriseBlocks(editor);
-                console.log('[Editor] Plugin enterpriseBlocks cargado');
-              } catch (error) {
-                console.error('[Editor] Error al cargar enterpriseBlocks:', error);
-              }
-            }
-            
-            if (typeof angularIntegrationPlugin === 'function') {
-              try {
-                angularIntegrationPlugin(editor);
-                console.log('[Editor] Plugin angularIntegrationPlugin cargado');
-              } catch (error) {
-                console.error('[Editor] Error al cargar angularIntegrationPlugin:', error);
-              }
-            }
-            
-            if (typeof pageManagerPlugin === 'function') {
-              try {
-                pageManagerPlugin(editor);
-                console.log('[Editor] Plugin pageManagerPlugin cargado');
-              } catch (error) {
-                console.error('[Editor] Error al cargar pageManagerPlugin:', error);
-              }
-            }
-            
-            console.log('[Editor] Todos los plugins cargados correctamente');
-          } catch (error) {
-            console.error('[Editor] Error general al cargar plugins:', error);
           }
-        }, 500);
-
-        // Manejar cambios en el editor
-        if (onChange && !readOnly) {
-          editor.on("component:add", (component) => {
-            onChange({ 
-              type: 'component:add', 
-              data: component.toJSON() as Record<string, unknown>, 
-              parentId: component.parent()?.getId(), 
-              index: component.index() 
-            });
-          });
-          
-          editor.on("component:update", (component, changed) => {
-            if (!changed || Object.keys(changed).some(key => ['status', 'open'].includes(key))) return;
-            onChange({ 
-              type: 'component:update', 
-              data: { changed, component: component.toJSON() } as Record<string, unknown>, 
-              componentId: component.getId() 
-            });
-          });
-          
-          editor.on("component:remove", (component) => {
-            onChange({ 
-              type: 'component:remove', 
-              data: { componentId: component.getId() } as Record<string, unknown>, 
-              parentId: component.parent()?.getId() 
-            });
-          });
-          
-          editor.on("component:move", (component, data) => {
-            onChange({ 
-              type: 'component:move', 
-              data: { ...data, componentId: component.getId() } as Record<string, unknown> 
-            });
-          });
-          
-          editor.on("style:update", (style) => {
-            onChange({ type: 'style:update', data: style as Record<string, unknown> });
-          });
-          
-          editor.on("style:add", (style) => {
-            onChange({ type: 'style:add', data: style as Record<string, unknown> });
-          });
-          
-          editor.on("style:remove", (style) => {
-            onChange({ type: 'style:remove', data: style as Record<string, unknown> });
-          });
-          
-          editor.on("page:add page:remove page:update page:select", () => {
-            const pages = editor.Pages.getAll();
-            const pagesData = pages.map(page => ({
-              id: page.get('id') || `page-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-              name: page.get('name'),
-              styles: page.get('styles'),
-              component: page.getMainComponent()?.toJSON()
-            }));
-            
-            onChange({
-              type: 'pages:update',
-              data: { pages: pagesData } as Record<string, unknown>
-            });
-          });
-        }
-
-        // Registrar el editor con el servicio puente
-        GrapesJSBridgeService.registerEditor(editor);
         
-        // Si hay un projectId, registrarlo también
-        if (projectId) {
-          GrapesJSBridgeService.registerProject(projectId);
+          console.log('[Editor] Todos los plugins cargados correctamente');
+        } catch (error) {
+          console.error('[Editor] Error general al cargar plugins:', error);
         }
+      }, 500);
 
-        // Limpieza al desmontar
-        return () => {
-          if (window.grapesJsActions) {
-            window.grapesJsActions = undefined;
-          }
-          editorRefInternal.current?.destroy();
-          editorRefInternal.current = null;
+      // Manejar cambios en el editor
+      if (onChange && !readOnly) {
+        editor.on("component:add", (component) => {
+          onChange({ 
+            type: 'component:add', 
+            data: component.toJSON() as Record<string, unknown>, 
+            parentId: component.parent()?.getId(), 
+            index: component.index() 
+          });
+        });
+        
+        editor.on("component:update", (component, changed) => {
+          if (!changed || Object.keys(changed).some(key => ['status', 'open'].includes(key))) return;
+          onChange({ 
+            type: 'component:update', 
+            data: { changed, component: component.toJSON() } as Record<string, unknown>, 
+            componentId: component.getId() 
+          });
+        });
+        
+        editor.on("component:remove", (component) => {
+          onChange({ 
+            type: 'component:remove', 
+            data: { componentId: component.getId() } as Record<string, unknown>, 
+            parentId: component.parent()?.getId() 
+          });
+        });
+        
+        editor.on("component:move", (component, data) => {
+          onChange({ 
+            type: 'component:move', 
+            data: { ...data, componentId: component.getId() } as Record<string, unknown> 
+          });
+        });
+        
+        editor.on("style:update", (style) => {
+          onChange({ type: 'style:update', data: style as Record<string, unknown> });
+        });
+        
+        editor.on("style:add", (style) => {
+          onChange({ type: 'style:add', data: style as Record<string, unknown> });
+        });
+        
+        editor.on("style:remove", (style) => {
+          onChange({ type: 'style:remove', data: style as Record<string, unknown> });
+        });
+        
+        editor.on("page:add page:remove page:update page:select", () => {
+          const pages = editor.Pages.getAll();
+          const pagesData = pages.map(page => ({
+            id: page.get('id') || `page-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            name: page.get('name'),
+            styles: page.get('styles'),
+            component: page.getMainComponent()?.toJSON()
+          }));
+          
+          onChange({
+            type: 'pages:update',
+            data: { pages: pagesData } as Record<string, unknown>
+          });
+        });
+      }
 
-          // Limpiar el ID del proyecto y el socket al desmontar
-          if (typeof window !== 'undefined') {
-            // @ts-expect-error - Eliminar propiedades de window
-            delete window.currentProjectId;
-            // @ts-expect-error - Eliminar propiedades de window
-            delete window.socketInstance;
-          }
-        };
-      }, [JSON.stringify(initialContent), onChange, readOnly, projectId, socket]);
+      // Registrar el editor con el servicio puente
+      GrapesJSBridgeService.registerEditor(editor);
+      
+      // Si hay un projectId, registrarlo también
+      if (projectId) {
+        GrapesJSBridgeService.registerProject(projectId);
+      }
+
+      // Limpieza al desmontar
+      return () => {
+        if (window.grapesJsActions) {
+          window.grapesJsActions = undefined;
+        }
+        editorRefInternal.current?.destroy();
+        editorRefInternal.current = null;
+
+        // Limpiar el ID del proyecto y el socket al desmontar
+        if (typeof window !== 'undefined') {
+          // @ts-expect-error - Eliminar propiedades de window
+          delete window.currentProjectId;
+          // @ts-expect-error - Eliminar propiedades de window
+          delete window.socketInstance;
+        }
+      };
+    }, [JSON.stringify(initialContent), onChange, readOnly, projectId, socket]);
 
     // Inicializar los paneles después de que el componente esté montado
     useEffect(() => {
@@ -751,21 +748,21 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
         // Enviar al backend - reemplazar URL con la correcta
         const response = await fetch('/api/projects/save', {
           method: 'POST',
-        headers: {
+          headers: {
             'Content-Type': 'application/json',
-        },
+          },
           body: JSON.stringify(projectData),
-      });
+        });
 
-      if (!response.ok) {
+        if (!response.ok) {
           throw new Error('Error al guardar el proyecto');
-      }
+        }
 
         setLastSaved(new Date());
         console.log(`Proyecto guardado: ${new Date().toLocaleTimeString()}`);
         // Mostrar mensaje de éxito usando un toast o sistema de notificaciones
         // ...
-    } catch (error) {
+      } catch (error) {
         console.error('Error al guardar el proyecto:', error);
         // Mostrar mensaje de error usando un toast o sistema de notificaciones
         // ...
@@ -1239,17 +1236,17 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
                 <div className="border-r border-border h-5 mx-1"></div>
                 <ToolbarButton
                   title="Mostrar Bordes"
-                  onClick={() => window.grapesJsActions?.toggleComponentOutline()}
+                  onClick={() => window.grapesJsActions?.toggleComponentOutline?.()}
                   icon={<svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M3,3 L21,3 L21,21 L3,21 L3,3 Z M5,5 L5,19 L19,19 L19,5 L5,5 Z"></path></svg>}
                 />
                 <ToolbarButton
                   title="Vista Previa"
-                  onClick={() => window.grapesJsActions?.togglePreview()}
+                  onClick={() => window.grapesJsActions?.togglePreview?.()}
                   icon={<svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12,9 A3,3 0 0,1 15,12 A3,3 0 0,1 12,15 A3,3 0 0,1 9,12 A3,3 0 0,1 12,9 M12,4.5 C17,4.5 21.27,7.61 23,12 C21.27,16.39 17,19.5 12,19.5 C7,19.5 2.73,16.39 1,12 C2.73,7.61 7,4.5 12,4.5 Z"></path></svg>}
                 />
                 <ToolbarButton
                   title="Administrar Páginas"
-                  onClick={() => window.grapesJsActions?.openPagesDialog()}
+                  onClick={() => window.grapesJsActions?.openPagesDialog?.()}
                   icon={<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>}
                 />
                 <ToolbarButton
@@ -1259,7 +1256,7 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
                 />
                 <ToolbarButton
                   title="Exportar HTML"
-                  onClick={() => window.grapesJsActions?.exportHTML()}
+                  onClick={() => window.grapesJsActions?.exportHTML?.()}
                   icon={<svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"></path></svg>}
                 />
                 {projectId && (
@@ -1288,19 +1285,19 @@ const SimpleGrapesJSEditor = forwardRef<SimpleGrapesEditorHandle, SimpleGrapesJS
                   id="device-desktop"
                   title="Escritorio"
                   initialActive={true}
-                  onClick={() => window.grapesJsActions?.setDeviceDesktop()}
+                  onClick={() => window.grapesJsActions?.setDeviceDesktop?.()}
                   icon={<svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16C1,17.11 1.9,18 3,18H10V20H8V22H16V20H14V18H21C22.11,18 23,17.11 23,16V4C23,2.89 22.1,2 21,2Z"></path></svg>}
                 />
                 <ToolbarButton
                   id="device-tablet"
                   title="Tablet"
-                  onClick={() => window.grapesJsActions?.setDeviceTablet()}
+                  onClick={() => window.grapesJsActions?.setDeviceTablet?.()}
                   icon={<svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19,18H5V6H19M21,4H3C1.89,4 1,4.89 1,6V18C1,19.1 1.9,20 3,20H21C22.1,20 23,19.1 23,18V6C23,4.89 22.1,4 21,4Z"></path></svg>}
                 />
                 <ToolbarButton
                   id="device-mobile"
                   title="Móvil"
-                  onClick={() => window.grapesJsActions?.setDeviceMobile()}
+                  onClick={() => window.grapesJsActions?.setDeviceMobile?.()}
                   icon={<svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M17,19H7V5H17M17,1H7C5.89,1 5,1.89 5,3V21C5,22.11 5.9,23 7,23H17C18.11,23 19,22.11 19,21V3C19,1.89 18.1,1 17,1Z"></path></svg>}
                 />
               </div>
@@ -1368,9 +1365,9 @@ Páginas en editor: ${editorInstance.Pages.getAll().length}`);
           <div className="editor-right-sidebar w-60 flex-shrink-0 border-l border-border bg-muted dark:bg-neutral-900/50 flex flex-col">
             {/* Tabs */}
             <div className="panel__tabs flex items-center justify-around p-1 border-b border-border">
-              <TabButton id="tab-style" label="Estilos" active={true} onClick={() => window.grapesJsActions?.showStyles()} />
-              <TabButton id="tab-layers" label="Capas" onClick={() => window.grapesJsActions?.showLayers()} />
-              <TabButton id="tab-traits" label="Atributos" onClick={() => window.grapesJsActions?.showTraits()} />
+              <TabButton id="tab-style" label="Estilos" active={true} onClick={() => window.grapesJsActions?.showStyles?.()} />
+              <TabButton id="tab-layers" label="Capas" onClick={() => window.grapesJsActions?.showLayers?.()} />
+              <TabButton id="tab-traits" label="Atributos" onClick={() => window.grapesJsActions?.showTraits?.()} />
             </div>
             
             {/* Contenedores de paneles */}

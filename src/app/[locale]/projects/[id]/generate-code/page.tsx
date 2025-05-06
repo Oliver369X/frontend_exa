@@ -7,6 +7,8 @@ interface GenerateCodePageProps {
   };
 }
 
-export default function GenerateCodePage({ params }: GenerateCodePageProps) {
-  return <CodeGenerationPage projectId={params.id} locale={params.locale} />;
+export default async function GenerateCodePage({ params }: GenerateCodePageProps) {
+  const id = await params.id;
+  const locale = await params.locale;
+  return <CodeGenerationPage projectId={id} locale={locale} />;
 }

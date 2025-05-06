@@ -16,14 +16,14 @@ export interface GrapesJSPageData {
 
 // Definir una interfaz para el editor GrapesJS
 interface GrapesJSEditor {
-  getComponents: () => any;
+  getComponents: () => unknown;
   getHtml: () => string;
-  getCss: (options?: any) => string;
+  getCss: (options?: unknown) => string;
   getJs?: () => string;
-  getStyle?: () => any[];
+  getStyle?: () => unknown[];
   Commands: {
-    run: (cmd: string) => any;
-    stop: (cmd: string) => any;
+    run: (cmd: string) => unknown;
+    stop: (cmd: string) => unknown;
   };
   UndoManager: {
     undo: () => void;
@@ -33,7 +33,7 @@ interface GrapesJSEditor {
   Pages?: {
     getAll: () => Array<{
       id: string;
-      get: (prop: string) => any;
+      get: (prop: string) => unknown;
       getMainComponent?: () => {
         toHTML: () => string;
         toJSON: () => Record<string, unknown>;

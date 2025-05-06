@@ -52,13 +52,13 @@ export function ProjectForm({ onSuccess, initialData }: ProjectFormProps) {
       console.log("[DEBUG] Submitting project data:", payload);
       
       try {
-        res = await fetch(apiUrl, {
-          method: initialData?.id ? "PUT" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
+      res = await fetch(apiUrl, {
+        method: initialData?.id ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
       } catch (error) {
         console.error("Fetch error:", error);
         // Simular respuesta exitosa para evitar bloquear al usuario
@@ -78,10 +78,10 @@ export function ProjectForm({ onSuccess, initialData }: ProjectFormProps) {
       let responseText = "";
       try {
         responseText = await res.text();
-        console.log(`[DEBUG] /projects ${initialData?.id ? "PUT" : "POST"} response:`, {
-          status: res.status,
-          text: responseText.substring(0, 200) + (responseText.length > 200 ? '...' : '')
-        });
+      console.log(`[DEBUG] /projects ${initialData?.id ? "PUT" : "POST"} response:`, {
+        status: res.status,
+        text: responseText.substring(0, 200) + (responseText.length > 200 ? '...' : '')
+      });
       } catch (error) {
         console.error("Error reading response:", error);
         // Simular respuesta exitosa para evitar bloquear al usuario

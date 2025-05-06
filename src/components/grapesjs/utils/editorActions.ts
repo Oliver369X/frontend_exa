@@ -45,7 +45,7 @@ export function setupEditorActions(editor: Editor, createShowPanelFn: (panelId: 
     showStyles: createShowPanelFn('style'),
     showLayers: createShowPanelFn('layers'),
     showTraits: createShowPanelFn('traits'),
-
+    
     // Funciones para manipular la vista
     toggleComponentOutline: () => {
       // Accedemos al canvas y alternamos la visualización de los contornos
@@ -92,7 +92,7 @@ export function setupEditorActions(editor: Editor, createShowPanelFn: (panelId: 
       });
       document.getElementById('device-mobile')?.classList.add('active');
     },
-
+    
     // Función para manipular páginas
     openPagesDialog: () => {
       if (editor.Commands.has('open-pages')) {
@@ -102,12 +102,12 @@ export function setupEditorActions(editor: Editor, createShowPanelFn: (panelId: 
         alert('La administración de páginas no está disponible en esta versión');
       }
     },
-
+    
     // Funciones de exportación
     exportHTML: () => {
-      const html = editor.getHtml();
-      const css = editor.getCss();
-      
+          const html = editor.getHtml();
+          const css = editor.getCss();
+          
       // Crear una estructura de página HTML completa
       const fullHtml = `
 <!DOCTYPE html>
@@ -121,25 +121,25 @@ ${css}
   </style>
 </head>
 <body>
-${html}
+  ${html}
 </body>
 </html>`;
-      
+        
       // Crear un blob con el HTML completo
       const blob = new Blob([fullHtml], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      
-      // Crear un enlace para descargar el archivo
-      const a = document.createElement('a');
-      a.href = url;
+        const url = URL.createObjectURL(blob);
+        
+        // Crear un enlace para descargar el archivo
+        const a = document.createElement('a');
+        a.href = url;
       a.download = `pagina-exportada-${new Date().getTime()}.html`;
-      a.click();
-      
+        a.click();
+        
       // Liberar la URL
-      URL.revokeObjectURL(url);
+          URL.revokeObjectURL(url);
     }
   };
-
+  
   return actions;
 }
 

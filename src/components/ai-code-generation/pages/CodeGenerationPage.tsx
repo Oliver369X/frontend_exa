@@ -13,10 +13,10 @@ interface ProjectData {
 
 interface CodeGenerationPageProps {
   projectId: string;
-  locale: string;
+  locale?: string; // Para compatibilidad con Next.js dinámico
 }
 
-export function CodeGenerationPage({ projectId, locale }: CodeGenerationPageProps) {
+export function CodeGenerationPage({ projectId }: CodeGenerationPageProps) {
   const [projectData, setProjectData] = useState<ProjectData>({ id: projectId, name: 'Proyecto Angular' });
   const [isLoading, setIsLoading] = useState(true);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
@@ -30,7 +30,7 @@ export function CodeGenerationPage({ projectId, locale }: CodeGenerationPageProp
         
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-          setProjectData({ id: projectId, name: `Proyecto Angular ${projectId}` });
+          setProjectData({ id: projectId, name: `Proyecto Angular ${projectId.slice(0, 8)}` });
           return;
         }
         
@@ -42,7 +42,11 @@ export function CodeGenerationPage({ projectId, locale }: CodeGenerationPageProp
         setProjectData(data);
       } catch (error) {
         console.error('Error al cargar datos del proyecto:', error);
-        setProjectData({ id: projectId, name: `Proyecto Angular ${projectId}` });
+        // Use a safe substring operation to prevent errors
+        const safeId = projectId && typeof projectId === 'string' 
+          ? projectId.slice(0, 8) 
+          : 'default';
+        setProjectData({ id: projectId, name: `Proyecto Angular ${safeId}` });
       } finally {
         setIsLoading(false);
       }
@@ -56,18 +60,24 @@ export function CodeGenerationPage({ projectId, locale }: CodeGenerationPageProp
   };
   
   if (isLoading) {
-    return <div className="flex justify-center items-center h-96">Cargando datos del proyecto...</div>;
+    return <div className="flex justify-center items-center h-screen">Cargando datos del proyecto...</div>;
   }
   
   if (!isProviderReady) {
-    return <div className="flex justify-center items-center h-96">Inicializando el proveedor de IA...</div>;
+    return <div className="flex justify-center items-center h-screen">Inicializando el proveedor de IA...</div>;
   }
   
-  const generatedCode = messages.find(m => m.role === 'assistant')?.content;
+  // Obtener código generado del último mensaje de asistente
+  const generatedCode = messages
+    .filter(m => m.role === 'assistant')
+    .map(m => m.content)
+    .pop();
   
   return (
-    <div className="h-screen w-full flex flex-col">
-      <GenerationHeader projectName={projectData?.name || 'Proyecto'} />
+    <div className="h-screen w-full flex flex-col overflow-hidden">
+      <div className="flex-shrink-0">
+        <GenerationHeader projectName={projectData?.name || 'Proyecto'} />
+      </div>
       
       {/* Botón flotante para mostrar chat cuando está colapsado */}
       {isChatCollapsed && (
@@ -82,18 +92,21 @@ export function CodeGenerationPage({ projectId, locale }: CodeGenerationPageProp
         </button>
       )}
       
-      <div className="flex-grow flex overflow-hidden">
+      <div className="flex-grow flex overflow-hidden relative">
         {!isChatCollapsed && (
-          <div className="w-1/4 border-r">
+          <div className="w-1/3 md:w-1/4 border-r flex flex-col overflow-hidden">
             <ChatInterface 
               messages={messages} 
               onSendMessage={sendMessage} 
-              isLoading={isGenerating}
+              isLoading={isGenerating} 
               onCollapseToggle={handleChatCollapseToggle}
             />
           </div>
         )}
-        <div className={`${isChatCollapsed ? 'w-full' : 'w-3/4'} transition-all duration-300`}>
+        <div 
+          className={`transition-all duration-300 flex-grow h-full ${isChatCollapsed ? 'w-full' : 'w-2/3 md:w-3/4'}`}
+          style={{ height: 'calc(100vh - 60px)' }} // Ajustar altura para restar el header
+        >
           <EnhancedStackblitzEmbed 
             projectId={projectId} 
             generatedCode={generatedCode} 

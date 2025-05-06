@@ -1,5 +1,3 @@
-import type { Editor } from "grapesjs";
-
 // Extender el objeto Window para incluir nuestras propiedades personalizadas
 declare global {
   interface Window {
@@ -7,7 +5,7 @@ declare global {
     currentProjectId?: string;
     // Proveedor de socket para comunicación en tiempo real
     socketProvider?: {
-      socket: any; // Idealmente definiríamos un tipo más específico
+      socket: unknown; // Idealmente definiríamos un tipo más específico
       userId?: string;
     };
   }
@@ -15,7 +13,7 @@ declare global {
 
 // Tipos utilizados en el editor
 export interface GrapesJSData {
-  components?: any[] | string;
+  components?: unknown[] | string;
   styles?: string;
   html?: string;
   css?: string;
@@ -31,7 +29,7 @@ export interface GrapesJSData {
 export interface PageData {
   id: string;
   name: string;
-  components?: Record<string, any>[];
+  components?: Record<string, unknown>[];
   html?: string;
   css?: string;
 }
@@ -57,7 +55,7 @@ export interface EditorDeltaUpdate {
 
 // Definir tipo para la referencia al editor
 export interface SimpleGrapesEditorHandle {
-  getEditorInstance: () => any;
+  getEditorInstance: () => unknown;
 }
 
 // Definir acciones que exponemos a través de window
