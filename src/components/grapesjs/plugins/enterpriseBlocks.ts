@@ -1,6 +1,5 @@
 import { Plugin } from 'grapesjs';
 import { registerEnterpriseBlocks } from '../blocks';
-
 /**
  * Plugin que registra todos los componentes empresariales en GrapesJS
  */
@@ -12,7 +11,8 @@ const enterpriseBlocks: Plugin = (editor) => {
     { id: 'Tablas', label: 'Tablas' },
     { id: 'Componentes', label: 'Componentes' },
     { id: 'Navegación', label: 'Navegación' },
-    { id: 'Aplicaciones', label: 'Aplicaciones Empresariales' }
+    { id: 'Aplicaciones', label: 'Aplicaciones Empresariales' },
+    
   ]);
 
   // Registrar componentes empresariales desde el índice centralizado
@@ -88,6 +88,35 @@ const enterpriseBlocks: Plugin = (editor) => {
       }
     }
   });
+  editor.BlockManager.add('enterprise-checklist', {
+    label: 'Checklist Empresarial',
+    category: 'Aplicaciones',
+    content: {
+      type: 'checklist-container',
+      content: `<div class="checklist-container p-3 border rounded">
+        <div class="checklist-title mb-2">Lista de Tareas</div>
+        <div class="checklist-items">
+          <div data-gjs-type="checklist-item">
+            <input type="checkbox" class="form-check-input me-2">
+            <span class="task-text">Tarea de ejemplo</span>
+          </div>
+          <div data-gjs-type="checklist-item">
+            <input type="checkbox" class="form-check-input me-2">
+            <span class="task-text">Tarea de ejemplo</span>
+          </div>
+          <div data-gjs-type="checklist-item">
+            <input type="checkbox" class="form-check-input me-2">
+            <span class="task-text">Tarea de ejemplo</span>
+          </div>
+          <div data-gjs-type="checklist-item">
+            <input type="checkbox" class="form-check-input me-2">
+            <span class="task-text">Tarea de ejemplo</span>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-primary mt-2 add-task-btn">Añadir tarea</button>
+      </div>`
+    }
+  });
 
   editor.DomComponents.addType('angular-component', {
     model: {
@@ -137,6 +166,9 @@ const enterpriseBlocks: Plugin = (editor) => {
       </div>`
     }
   });
+
+  
+
 
   // Registro del plugin completado
   console.log('Plugin de componentes empresariales cargado correctamente');
